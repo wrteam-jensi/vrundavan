@@ -22,12 +22,12 @@ const WHY = [
 ];
 
 const CROPS = [
-  { cls: 'crop-bajra',     emoji: '🌾', name: 'Pearl Millet', local: 'Bajra',    desc: 'Drought-resistant staple grain cultivated across our drylands, rich in iron and fibre.' },
-  { cls: 'crop-wheat',     emoji: '🌿', name: 'Wheat',        local: 'Ghau',     desc: 'High-yield wheat varieties grown in cooler months, milled locally for wholesome flour.' },
-  { cls: 'crop-cotton',    emoji: '🌸', name: 'Cotton',       local: 'Kapas',    desc: 'Premium-quality cotton bolls cultivated on well-drained soil for superior fibre yield.' },
-  { cls: 'crop-castor',    emoji: '🌱', name: 'Castor',       local: 'Erandi',   desc: 'High oil-content castor beans grown for industrial and medicinal applications.' },
-  { cls: 'crop-coriander', emoji: '🌿', name: 'Coriander',    local: 'Dhana',    desc: 'Aromatic coriander seeds and leaves — a staple herb across Indian kitchens.' },
-  { cls: 'crop-groundnut', emoji: '🥜', name: 'Groundnut',    local: 'Mungfali', desc: 'Nutrient-rich peanuts grown in sandy loam soil, harvested for oil and direct use.' },
+  { cls: 'crop-bajra',     emoji: '🌾', img: '/crops/bajra.jpg',     name: 'Pearl Millet', local: 'Bajra',    desc: 'Drought-resistant staple grain cultivated across our drylands, rich in iron and fibre.' },
+  { cls: 'crop-wheat',     emoji: '🌿', img: '/crops/wheat.jpg',     name: 'Wheat',        local: 'Ghau',     desc: 'High-yield wheat varieties grown in cooler months, milled locally for wholesome flour.' },
+  { cls: 'crop-cotton',    emoji: '🌸', img: '/crops/cotton.jpg',    name: 'Cotton',       local: 'Kapas',    desc: 'Premium-quality cotton bolls cultivated on well-drained soil for superior fibre yield.' },
+  { cls: 'crop-castor',    emoji: '🌱', img: '/crops/castor.jpg',    name: 'Castor',       local: 'Erandi',   desc: 'High oil-content castor beans grown for industrial and medicinal applications.' },
+  { cls: 'crop-coriander', emoji: '🌿', img: '/crops/coriander.jpg', name: 'Coriander',    local: 'Dhana',    desc: 'Aromatic coriander seeds and leaves — a staple herb across Indian kitchens.' },
+  { cls: 'crop-groundnut', emoji: '🥜', img: '/crops/groundnut.jpg', name: 'Groundnut',    local: 'Mungfali', desc: 'Nutrient-rich peanuts grown in sandy loam soil, harvested for oil and direct use.' },
 ];
 
 const FRUITS = [
