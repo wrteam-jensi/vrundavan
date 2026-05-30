@@ -6,14 +6,13 @@ import { useEffect, useState } from 'react';
 const PRODUCE = [
   { cls: 'pc-fruits',  emoji: '🍋', name: 'Seasonal Fruits',    tag: 'Tree-Fresh',    desc: 'Mangoes, guavas, papayas, bananas — harvested at peak ripeness and delivered same day.' },
   { cls: 'pc-veggies', emoji: '🥦', name: 'Fresh Vegetables',   tag: 'Chemical-Free', desc: 'Tomatoes, brinjal, okra, bitter gourd — grown without synthetic chemicals or pesticides.' },
-  { cls: 'pc-leafy',   emoji: '🥬', name: 'Leafy Greens',       tag: 'Organic',       desc: 'Spinach, fenugreek, coriander — tender, nutrient-rich leaves picked fresh every morning.' },
-  { cls: 'pc-root',    emoji: '🥕', name: 'Root Vegetables',    tag: 'Soil-Rich',     desc: 'Carrots, beetroot, sweet potato, radish — deep-rooted in mineral-rich organic soil.' },
-  { cls: 'pc-herbs',   emoji: '🌿', name: 'Herbs & Medicinal',  tag: 'Natural',       desc: 'Tulsi, curry leaves, lemongrass, ginger — traditional varieties grown the natural way.' },
+  { cls: 'pc-leafy',   emoji: '🥬', name: 'Leafy Greens',       tag: 'Natural',       desc: 'Spinach, fenugreek, coriander — tender, nutrient-rich leaves picked fresh every morning.' },
+  { cls: 'pc-root',    emoji: '🥕', name: 'Root Vegetables',    tag: 'Soil-Rich',     desc: 'Carrots, beetroot, sweet potato, radish — deep-rooted in mineral-rich natural soil.' },
   { cls: 'pc-exotic',  emoji: '🍈', name: 'Exotic & Rare',      tag: 'Limited',       desc: 'Dragon fruit, starfruit, jackfruit — specialty crops grown with care and patience.' },
 ];
 
 const WHY = [
-  { icon: '🌱', title: 'Zero Chemicals',        desc: 'No synthetic fertilisers, pesticides, or hormones. Only natural compost and organic inputs.' },
+  { icon: '🌱', title: 'Zero Chemicals',        desc: 'No synthetic fertilisers, pesticides, or hormones. Only natural compost and natural inputs.' },
   { icon: '💧', title: 'Natural Water Source',  desc: 'Crops irrigated from bore-well and rainwater harvesting — pure from the ground up.' },
   { icon: '☀️', title: 'Sun-Ripened Always',    desc: 'Nothing is artificially ripened. Every fruit and vegetable matures on the plant, naturally.' },
   { icon: '🔄', title: 'Seasonal Rotation',     desc: 'Crops rotate seasonally to restore soil health and maintain nutritional quality year-round.' },
@@ -99,12 +98,23 @@ export default function Home() {
         <div className="particle p4" />
         <div className="particle p5" />
 
-        <div className="hero-left">
+        <div className="hero-content">
+          <div className="logo-stage">
+            <div className="logo-glow-ring" />
+            <div className="logo-bg-circle" />
+            <Image
+              src="/farmlogo.png"
+              alt="Vrundavan Farm — Natural Fruits & Vegetables"
+              width={260}
+              height={260}
+              priority
+              className="logo-img"
+            />
+          </div>
           <p className="hero-eyebrow">Natural Farm Since 2010</p>
           <h1 className="hero-title">
-            Straight From<br />
-            <span className="hero-title-accent">Farm to Your</span><br />
-            Table
+            Straight From Farm<br />
+            <span className="hero-title-accent">to Your Table</span>
           </h1>
           <p className="hero-sub">
             At Vrundavan Farm, we grow fresh fruits and vegetables the way
@@ -114,21 +124,6 @@ export default function Home() {
           <div className="hero-actions">
             <a href="#contact" className="btn-primary">Order Fresh Produce →</a>
             <a href="#produce" className="btn-outline">See What We Grow</a>
-          </div>
-        </div>
-
-        <div className="hero-right">
-          <div className="logo-stage">
-            <div className="logo-glow-ring" />
-            <div className="logo-bg-circle" />
-            <Image
-              src="/farmlogo.png"
-              alt="Vrundavan Farm — Natural Fruits & Vegetables"
-              width={320}
-              height={320}
-              priority
-              className="logo-img"
-            />
           </div>
         </div>
 
@@ -143,7 +138,7 @@ export default function Home() {
         {[
           { num: '15+', lbl: 'Years Farming' },
           { num: '40+', lbl: 'Crop Varieties' },
-          { num: '12',  lbl: 'Acres of Land' },
+          { num: '35',  lbl: 'Acres of Land' },
           { num: '100%', lbl: 'Chemical-Free' },
         ].map((s, i) => (
           <div key={s.lbl} className={`stat-cell reveal d${i + 1}`}>
@@ -161,7 +156,7 @@ export default function Home() {
             <h2 className="sec-title">Fresh from Vrundavan Fields</h2>
             <p className="sec-desc">
               Every crop is grown in clean, chemical-free soil using traditional
-              organic methods refined over 15 years of farming.
+              natural methods refined over 15 years of farming.
             </p>
           </div>
           <div className="produce-grid">
