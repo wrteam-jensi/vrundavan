@@ -275,10 +275,15 @@ export default function Home() {
           <div className="crops-grid">
             {CROPS.map((c, i) => (
               <article key={c.name} className={`crop-card reveal d${(i % 3) + 1}`}>
-                <div className={`crop-img-placeholder ${c.cls}`}>
-                  <span>{c.emoji}</span>
-                  <span className="crop-placeholder-label">Add photo</span>
-                </div>
+                {c.img ? (
+                  <div className="fruit-img-wrap">
+                    <Image src={c.img} alt={c.name} fill style={{ objectFit: 'cover' }} sizes="(max-width:768px) 50vw, 33vw" />
+                  </div>
+                ) : (
+                  <div className={`crop-img-placeholder ${c.cls}`}>
+                    <span>{c.emoji}</span>
+                  </div>
+                )}
                 <div className="crop-card-body">
                   <div className="crop-card-name">{c.name}</div>
                   <div className="crop-card-local">{c.local}</div>
