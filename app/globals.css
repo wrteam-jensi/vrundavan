@@ -585,6 +585,7 @@ img { display: block; }
   gap: 24px;
   margin-top: 56px;
 }
+.fruit-img-wrap { position: relative; height: 200px; overflow: hidden; }
 .fruit-mango    { background: linear-gradient(135deg, #ffe066 0%, #f4a020 100%); }
 .fruit-coconut  { background: linear-gradient(135deg, #d4b896 0%, #8a6840 100%); }
 .fruit-mulberry { background: linear-gradient(135deg, #9b59b6 0%, #6c2a8a 100%); }

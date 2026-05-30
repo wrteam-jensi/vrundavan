@@ -31,14 +31,14 @@ const CROPS = [
 ];
 
 const FRUITS = [
-  { cls: 'fruit-mango',    emoji: '🥭', name: 'Mango',        local: 'Aam',      desc: 'Sun-ripened alphonso and local varieties — sweet, fibrous, and bursting with flavour.' },
-  { cls: 'fruit-coconut',  emoji: '🥥', name: 'Coconut',      local: 'Nariyal',  desc: 'Tall coconut palms yielding tender water and mature flesh throughout the year.' },
-  { cls: 'fruit-mulberry', emoji: '🫐', name: 'Mulberry',     local: 'Shetur',   desc: 'Juicy dark mulberries harvested fresh — rich in antioxidants and natural sweetness.' },
-  { cls: 'fruit-sitafal',  emoji: '🍈', name: 'Custard Apple',local: 'Sitafal',  desc: 'Creamy, fragrant custard apples grown in rich soil — a seasonal favourite.' },
-  { cls: 'fruit-banana',   emoji: '🍌', name: 'Banana',       local: 'Kela',     desc: 'Year-round banana harvest — naturally ripened, starchy and full of potassium.' },
-  { cls: 'fruit-lemon',    emoji: '🍋', name: 'Lemon',        local: 'Limbu',    desc: 'Tangy, aromatic lemons used fresh in kitchens and for traditional remedies.' },
-  { cls: 'fruit-mosambi',  emoji: '🍊', name: 'Sweet Lime',   local: 'Mosambi',  desc: 'Mildly sweet citrus with refreshing juice — perfect for summer drinking.' },
-  { cls: 'fruit-jamun',    emoji: '🫐', name: 'Jamun',        local: 'Jambu',    desc: 'Deep-purple Indian blackberry with a distinct tang — prized for its health benefits.' },
+  { cls: 'fruit-mango',    emoji: '🥭', img: '/fruits/mango.jpg',        name: 'Mango',        local: 'Aam',      desc: 'Sun-ripened alphonso and local varieties — sweet, fibrous, and bursting with flavour.' },
+  { cls: 'fruit-coconut',  emoji: '🥥', img: '/fruits/coconut.jpg',      name: 'Coconut',      local: 'Nariyal',  desc: 'Tall coconut palms yielding tender water and mature flesh throughout the year.' },
+  { cls: 'fruit-mulberry', emoji: '🫐', img: '/fruits/mulberry.jpg',     name: 'Mulberry',     local: 'Shetur',   desc: 'Juicy dark mulberries harvested fresh — rich in antioxidants and natural sweetness.' },
+  { cls: 'fruit-sitafal',  emoji: '🍈', img: '/fruits/custard-apple.jpg',name: 'Custard Apple',local: 'Sitafal',  desc: 'Creamy, fragrant custard apples grown in rich soil — a seasonal favourite.' },
+  { cls: 'fruit-banana',   emoji: '🍌', img: '/fruits/banana.jpg',       name: 'Banana',       local: 'Kela',     desc: 'Year-round banana harvest — naturally ripened, starchy and full of potassium.' },
+  { cls: 'fruit-lemon',    emoji: '🍋', img: '/fruits/lemon.jpg',        name: 'Lemon',        local: 'Limbu',    desc: 'Tangy, aromatic lemons used fresh in kitchens and for traditional remedies.' },
+  { cls: 'fruit-mosambi',  emoji: '🍊', img: '/fruits/sweet-lime.jpg',   name: 'Sweet Lime',   local: 'Mosambi',  desc: 'Mildly sweet citrus with refreshing juice — perfect for summer drinking.' },
+  { cls: 'fruit-jamun',    emoji: '🫐', img: null,                       name: 'Jamun',        local: 'Jambu',    desc: 'Deep-purple Indian blackberry with a distinct tang — prized for its health benefits.' },
 ];
 
 const GALLERY = [
@@ -304,10 +304,16 @@ export default function Home() {
           <div className="fruits-grid">
             {FRUITS.map((f, i) => (
               <article key={f.name} className={`crop-card reveal d${(i % 4) + 1}`}>
-                <div className={`crop-img-placeholder ${f.cls}`}>
-                  <span>{f.emoji}</span>
-                  <span className="crop-placeholder-label">Add photo</span>
-                </div>
+                {f.img ? (
+                  <div className="fruit-img-wrap">
+                    <Image src={f.img} alt={f.name} fill style={{ objectFit: 'cover' }} sizes="(max-width:768px) 50vw, 25vw" />
+                  </div>
+                ) : (
+                  <div className={`crop-img-placeholder ${f.cls}`}>
+                    <span>{f.emoji}</span>
+                    <span className="crop-placeholder-label">Add photo</span>
+                  </div>
+                )}
                 <div className="crop-card-body">
                   <div className="crop-card-name">{f.name}</div>
                   <div className="crop-card-local">{f.local}</div>
