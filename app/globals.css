@@ -471,6 +471,40 @@ img { display: block; }
 .gi-4 { background:linear-gradient(135deg,#f4a261 0%,#e76f51 100%); }
 .gi-5 { background:linear-gradient(135deg,#95d5b2 0%,#40916c 100%); }
 
+/* ── Location ── */
+.location-section { background:var(--white); }
+.location-grid {
+  display:grid; grid-template-columns:1fr 1.1fr;
+  gap:72px; align-items:start;
+}
+.loc-details { margin-top:36px; display:flex; flex-direction:column; gap:0; }
+.loc-row {
+  display:flex; align-items:flex-start; gap:16px;
+  padding:18px 0; border-bottom:1px solid rgba(0,0,0,.07);
+}
+.loc-row:first-child { border-top:1px solid rgba(0,0,0,.07); }
+.loc-icon {
+  font-size:1.25rem; flex-shrink:0;
+  width:44px; height:44px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(27,67,50,.08); border-radius:12px;
+}
+.loc-label {
+  font-size:.78rem; font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:4px;
+}
+.loc-value { font-size:.95rem; color:var(--text); font-weight:500; }
+
+.map-wrapper {
+  border-radius:var(--r-lg);
+  overflow:hidden;
+  height:480px;
+  box-shadow:var(--shadow-lg);
+  border:4px solid rgba(27,67,50,.08);
+}
+.map-wrapper iframe { display:block; }
+
 /* ── CTA ── */
 .cta-section {
   background:linear-gradient(135deg, var(--gold) 0%, #a87530 100%);
@@ -519,10 +553,12 @@ footer { background:#071410; color:rgba(255,255,255,.65); padding:64px 80px 40px
   .stat-cell  { border-right:none; border-bottom:1px solid rgba(0,0,0,.07); }
   .produce-grid { grid-template-columns:repeat(2,1fr); }
   .why-grid   { grid-template-columns:repeat(2,1fr); }
-  .story-grid { grid-template-columns:1fr; }
+  .story-grid    { grid-template-columns:1fr; }
   .story-img-stack { display:none; }
-  .section    { padding:80px 48px; }
-  .footer-grid { grid-template-columns:1fr 1fr; }
+  .location-grid { grid-template-columns:1fr; }
+  .map-wrapper   { height:380px; }
+  .section       { padding:80px 48px; }
+  .footer-grid   { grid-template-columns:1fr 1fr; }
 }
 @media (max-width:768px) {
   .navbar        { padding:16px 24px; }
@@ -545,6 +581,8 @@ footer { background:#071410; color:rgba(255,255,255,.65); padding:64px 80px 40px
   }
   .g-card:nth-child(1) { grid-column:span 1; }
   .g-inner       { height:200px; }
+  .location-grid { grid-template-columns:1fr; }
+  .map-wrapper   { height:300px; }
   .cta-section   { padding:80px 24px; }
   .footer-grid   { grid-template-columns:1fr; gap:32px; }
   .footer-bottom { flex-direction:column; gap:8px; text-align:center; }

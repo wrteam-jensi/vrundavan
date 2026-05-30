@@ -62,6 +62,7 @@ export default function Home() {
           <li><a href="#produce">Our Produce</a></li>
           <li><a href="#story">Our Story</a></li>
           <li><a href="#gallery">Gallery</a></li>
+          <li><a href="#location">Location</a></li>
           <li><a href="#contact" className="nav-cta">Order Fresh</a></li>
         </ul>
       </nav>
@@ -259,6 +260,67 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Location ── */}
+      <section id="location" className="section location-section">
+        <div className="container">
+          <div className="location-grid">
+            <div className="reveal-left">
+              <p className="eyebrow">Visit Us</p>
+              <h2 className="sec-title">Find Vrundavan Farm</h2>
+              <p className="sec-desc">
+                We are located in Mankuva village. Come visit, see how your food
+                is grown, and take home the freshest produce straight from the field.
+              </p>
+              <div className="loc-details">
+                <div className="loc-row">
+                  <span className="loc-icon">📍</span>
+                  <div>
+                    <div className="loc-label">Address</div>
+                    <div className="loc-value">Vrundavan Farm, Mankuva, Gujarat, India</div>
+                  </div>
+                </div>
+                <div className="loc-row">
+                  <span className="loc-icon">🕗</span>
+                  <div>
+                    <div className="loc-label">Farm Hours</div>
+                    <div className="loc-value">Monday – Saturday, 7:00 AM – 6:00 PM</div>
+                  </div>
+                </div>
+                <div className="loc-row">
+                  <span className="loc-icon">📞</span>
+                  <div>
+                    <div className="loc-label">Call Ahead</div>
+                    <div className="loc-value">Best to call before visiting for bulk orders</div>
+                  </div>
+                </div>
+              </div>
+              <a
+                href="https://maps.google.com/?q=23.200955,69.542667"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary"
+                style={{ marginTop: '32px', display: 'inline-flex' }}
+              >
+                Open in Google Maps →
+              </a>
+            </div>
+
+            <div className="map-wrapper reveal-right">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4770.084985577668!2d69.54266696630644!3d23.200955008689157!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39511957305babf9%3A0x56d39b7c30c8a46b!2sVrundavan%20farm%20mankuva!5e1!3m2!1sen!2sin!4v1780114355886!5m2!1sen!2sin"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Vrundavan Farm location on Google Maps"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section id="contact" className="cta-section">
         <h2 className="cta-title reveal">Get Fresh Produce Delivered</h2>
@@ -285,13 +347,14 @@ export default function Home() {
               <li><a href="#produce">Our Produce</a></li>
               <li><a href="#story">Our Story</a></li>
               <li><a href="#gallery">Gallery</a></li>
+              <li><a href="#location">Location</a></li>
               <li><a href="#contact">Order Fresh</a></li>
             </ul>
           </div>
           <div className="footer-col">
             <h4>Contact</h4>
             <ul>
-              <li><a href="#">Village Farm, India</a></li>
+              <li><a href="#location">Mankuva, Gujarat, India</a></li>
               <li><a href="tel:+91">Call Us</a></li>
               <li><a href="mailto:info@vrundavan.com">info@vrundavan.com</a></li>
             </ul>
