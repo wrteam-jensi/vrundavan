@@ -289,8 +289,8 @@ export default function Home() {
                 <div className="loc-row">
                   <span className="loc-icon">📞</span>
                   <div>
-                    <div className="loc-label">Call Ahead</div>
-                    <div className="loc-value">Best to call before visiting for bulk orders</div>
+                    <div className="loc-label">Phone</div>
+                    <div className="loc-value"><a href="tel:+919726726134" style={{ color: 'var(--forest)', fontWeight: 600 }}>+91 97267 26134</a></div>
                   </div>
                 </div>
               </div>
@@ -328,7 +328,7 @@ export default function Home() {
           Order directly from Vrundavan Farm — harvested this morning, at your
           door by evening. 100% natural, zero compromise.
         </p>
-        <a href="tel:+91" className="btn-dark reveal">📞 Call to Order Now</a>
+        <a href="tel:+919726726134" className="btn-dark reveal">📞 +91 97267 26134 — Call to Order</a>
       </section>
 
       {/* ── Footer ── */}
@@ -355,7 +355,7 @@ export default function Home() {
             <h4>Contact</h4>
             <ul>
               <li><a href="#location">Mankuva, Gujarat, India</a></li>
-              <li><a href="tel:+91">Call Us</a></li>
+              <li><a href="tel:+919726726134">+91 97267 26134</a></li>
               <li><a href="mailto:info@vrundavan.com">info@vrundavan.com</a></li>
             </ul>
           </div>
