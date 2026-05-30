@@ -30,6 +30,17 @@ const CROPS = [
   { cls: 'crop-groundnut', emoji: '🥜', name: 'Groundnut',    local: 'Mungfali', desc: 'Nutrient-rich peanuts grown in sandy loam soil, harvested for oil and direct use.' },
 ];
 
+const FRUITS = [
+  { cls: 'fruit-mango',    emoji: '🥭', name: 'Mango',        local: 'Aam',      desc: 'Sun-ripened alphonso and local varieties — sweet, fibrous, and bursting with flavour.' },
+  { cls: 'fruit-coconut',  emoji: '🥥', name: 'Coconut',      local: 'Nariyal',  desc: 'Tall coconut palms yielding tender water and mature flesh throughout the year.' },
+  { cls: 'fruit-mulberry', emoji: '🫐', name: 'Mulberry',     local: 'Shetur',   desc: 'Juicy dark mulberries harvested fresh — rich in antioxidants and natural sweetness.' },
+  { cls: 'fruit-sitafal',  emoji: '🍈', name: 'Custard Apple',local: 'Sitafal',  desc: 'Creamy, fragrant custard apples grown in rich soil — a seasonal favourite.' },
+  { cls: 'fruit-banana',   emoji: '🍌', name: 'Banana',       local: 'Kela',     desc: 'Year-round banana harvest — naturally ripened, starchy and full of potassium.' },
+  { cls: 'fruit-lemon',    emoji: '🍋', name: 'Lemon',        local: 'Limbu',    desc: 'Tangy, aromatic lemons used fresh in kitchens and for traditional remedies.' },
+  { cls: 'fruit-mosambi',  emoji: '🍊', name: 'Sweet Lime',   local: 'Mosambi',  desc: 'Mildly sweet citrus with refreshing juice — perfect for summer drinking.' },
+  { cls: 'fruit-jamun',    emoji: '🫐', name: 'Jamun',        local: 'Jambu',    desc: 'Deep-purple Indian blackberry with a distinct tang — prized for its health benefits.' },
+];
+
 const GALLERY = [
   { cls: 'gi-1', label: 'Morning Harvest' },
   { cls: 'gi-2', label: 'Sun-Ripened Fruits' },
@@ -70,6 +81,7 @@ export default function Home() {
         <ul className="nav-links">
           <li><a href="#produce">Our Produce</a></li>
           <li><a href="#crops">Crops</a></li>
+          <li><a href="#fruits">Fruits</a></li>
           <li><a href="#story">Our Story</a></li>
           <li><a href="#gallery">Gallery</a></li>
           <li><a href="#location">Location</a></li>
@@ -271,6 +283,35 @@ export default function Home() {
                   <div className="crop-card-name">{c.name}</div>
                   <div className="crop-card-local">{c.local}</div>
                   <p className="crop-card-desc">{c.desc}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Fruits ── */}
+      <section id="fruits" className="section fruits-section">
+        <div className="container">
+          <div className="reveal">
+            <p className="eyebrow eyebrow-leaf">Fruits Grown</p>
+            <h2 className="sec-title">Our Orchard</h2>
+            <p className="sec-desc">
+              Grown on our farm with no artificial ripening — picked at their
+              natural peak and available fresh through the season.
+            </p>
+          </div>
+          <div className="fruits-grid">
+            {FRUITS.map((f, i) => (
+              <article key={f.name} className={`crop-card reveal d${(i % 4) + 1}`}>
+                <div className={`crop-img-placeholder ${f.cls}`}>
+                  <span>{f.emoji}</span>
+                  <span className="crop-placeholder-label">Add photo</span>
+                </div>
+                <div className="crop-card-body">
+                  <div className="crop-card-name">{f.name}</div>
+                  <div className="crop-card-local">{f.local}</div>
+                  <p className="crop-card-desc">{f.desc}</p>
                 </div>
               </article>
             ))}

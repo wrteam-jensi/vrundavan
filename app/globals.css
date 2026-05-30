@@ -576,6 +576,23 @@ img { display: block; }
 .crop-coriander { background: linear-gradient(135deg, #a8d080 0%, #5a9020 100%); }
 .crop-groundnut { background: linear-gradient(135deg, #c89860 0%, #8a5a20 100%); }
 .crop-card-body { padding: 24px; }
+
+/* ── Fruits ── */
+.fruits-section { background: var(--warm); }
+.fruits-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-top: 56px;
+}
+.fruit-mango    { background: linear-gradient(135deg, #ffe066 0%, #f4a020 100%); }
+.fruit-coconut  { background: linear-gradient(135deg, #d4b896 0%, #8a6840 100%); }
+.fruit-mulberry { background: linear-gradient(135deg, #9b59b6 0%, #6c2a8a 100%); }
+.fruit-sitafal  { background: linear-gradient(135deg, #a8d878 0%, #4a9020 100%); }
+.fruit-banana   { background: linear-gradient(135deg, #ffe44d 0%, #d4a010 100%); }
+.fruit-lemon    { background: linear-gradient(135deg, #f0f070 0%, #c8c010 100%); }
+.fruit-mosambi  { background: linear-gradient(135deg, #f0c060 0%, #d07818 100%); }
+.fruit-jamun    { background: linear-gradient(135deg, #7b3fa0 0%, #2d1050 100%); }
 .crop-card-name { font-weight: 700; font-size: 1.1rem; color: var(--forest); }
 .crop-card-local { font-size: .82rem; color: var(--gold); font-weight: 600; margin: 4px 0 10px; }
 .crop-card-desc { font-size: .88rem; color: var(--muted); line-height: 1.7; }
@@ -599,8 +616,9 @@ footer { background:#071410; color:rgba(255,255,255,.65); padding:64px 80px 40px
   .stats-bar  { grid-template-columns:repeat(2,1fr); }
   .stat-cell  { border-right:none; border-bottom:1px solid rgba(0,0,0,.07); }
   .produce-grid { grid-template-columns:repeat(2,1fr); }
-  .crops-grid { grid-template-columns:repeat(2,1fr); }
-  .why-grid   { grid-template-columns:repeat(2,1fr); }
+  .crops-grid  { grid-template-columns:repeat(2,1fr); }
+  .fruits-grid { grid-template-columns:repeat(2,1fr); }
+  .why-grid    { grid-template-columns:repeat(2,1fr); }
   .story-grid    { grid-template-columns:1fr; }
   .story-img-stack { display:none; }
   .location-grid { grid-template-columns:1fr; }
@@ -621,6 +639,7 @@ footer { background:#071410; color:rgba(255,255,255,.65); padding:64px 80px 40px
   .section       { padding:60px 24px; }
   .produce-grid  { grid-template-columns:1fr; }
   .crops-grid    { grid-template-columns:1fr; }
+  .fruits-grid   { grid-template-columns:repeat(2,1fr); }
   .why-header    { flex-direction:column; align-items:flex-start; }
   .why-grid      { grid-template-columns:1fr; }
   .gallery-grid  {
