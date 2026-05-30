@@ -110,3 +110,82 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+/* Mobile-first responsive tweaks */
+@media (max-width: 900px) {
+  .page-shell {
+    padding: 32px 20px;
+  }
+
+  .hero {
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .hero-copy p,
+  .details p,
+  .feature-list p {
+    font-size: 1rem;
+  }
+
+  .stats-grid {
+    gap: 16px;
+  }
+
+  .stats-grid div {
+    flex: 1 1 45%;
+    min-width: 140px;
+  }
+
+  .feature-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .page-shell {
+    padding: 20px 16px;
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 6vw, 2.8rem);
+  }
+
+  .hero {
+    gap: 16px;
+  }
+
+  .hero-copy {
+    max-width: 100%;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .stats-grid div {
+    min-width: 0;
+    padding: 14px 16px;
+  }
+
+  .hero-image {
+    justify-content: center;
+  }
+
+  /* Make next/image output scale responsively */
+  .hero-image img,
+  .hero-image picture,
+  .hero-image > div {
+    max-width: 100%;
+    height: auto !important;
+    width: 100% !important;
+    object-fit: contain;
+  }
+
+  .feature-list article {
+    padding: 16px;
+  }
+}
