@@ -21,6 +21,15 @@ const WHY = [
   { icon: '👨‍🌾', title: '15 Years of Expertise', desc: 'Since 2010, our farmers have honed traditional techniques passed down through generations.' },
 ];
 
+const CROPS = [
+  { cls: 'crop-bajra',     emoji: '🌾', name: 'Pearl Millet', local: 'Bajra',    desc: 'Drought-resistant staple grain cultivated across our drylands, rich in iron and fibre.' },
+  { cls: 'crop-wheat',     emoji: '🌿', name: 'Wheat',        local: 'Ghau',     desc: 'High-yield wheat varieties grown in cooler months, milled locally for wholesome flour.' },
+  { cls: 'crop-cotton',    emoji: '🌸', name: 'Cotton',       local: 'Kapas',    desc: 'Premium-quality cotton bolls cultivated on well-drained soil for superior fibre yield.' },
+  { cls: 'crop-castor',    emoji: '🌱', name: 'Castor',       local: 'Erandi',   desc: 'High oil-content castor beans grown for industrial and medicinal applications.' },
+  { cls: 'crop-coriander', emoji: '🌿', name: 'Coriander',    local: 'Dhana',    desc: 'Aromatic coriander seeds and leaves — a staple herb across Indian kitchens.' },
+  { cls: 'crop-groundnut', emoji: '🥜', name: 'Groundnut',    local: 'Mungfali', desc: 'Nutrient-rich peanuts grown in sandy loam soil, harvested for oil and direct use.' },
+];
+
 const GALLERY = [
   { cls: 'gi-1', label: 'Morning Harvest' },
   { cls: 'gi-2', label: 'Sun-Ripened Fruits' },
@@ -60,6 +69,7 @@ export default function Home() {
         <span className="nav-brand">Vrundavan Farm</span>
         <ul className="nav-links">
           <li><a href="#produce">Our Produce</a></li>
+          <li><a href="#crops">Crops</a></li>
           <li><a href="#story">Our Story</a></li>
           <li><a href="#gallery">Gallery</a></li>
           <li><a href="#location">Location</a></li>
@@ -235,6 +245,35 @@ export default function Home() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Crops ── */}
+      <section id="crops" className="section crops-section">
+        <div className="container">
+          <div className="reveal">
+            <p className="eyebrow">Agricultural Production</p>
+            <h2 className="sec-title">What We Cultivate</h2>
+            <p className="sec-desc">
+              Our farm produces a diverse range of crops using efficient farming
+              practices to ensure quality yield and sustainable agricultural production.
+            </p>
+          </div>
+          <div className="crops-grid">
+            {CROPS.map((c, i) => (
+              <article key={c.name} className={`crop-card reveal d${(i % 3) + 1}`}>
+                <div className={`crop-img-placeholder ${c.cls}`}>
+                  <span>{c.emoji}</span>
+                  <span className="crop-placeholder-label">Add photo</span>
+                </div>
+                <div className="crop-card-body">
+                  <div className="crop-card-name">{c.name}</div>
+                  <div className="crop-card-local">{c.local}</div>
+                  <p className="crop-card-desc">{c.desc}</p>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>
