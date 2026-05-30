@@ -97,15 +97,13 @@ export default function Home() {
 
         <div className="hero-right">
           <div className="logo-stage">
-            <div className="orb orb-3" />
-            <div className="logo-spin-ring" />
-            <div className="orb orb-1" />
-            <div className="orb orb-2" />
+            <div className="logo-glow-ring" />
+            <div className="logo-bg-circle" />
             <Image
               src="/farmlogo.png"
               alt="Vrundavan Farm — Natural Fruits & Vegetables"
-              width={380}
-              height={260}
+              width={320}
+              height={320}
               priority
               className="logo-img"
             />
