@@ -1,50 +1,307 @@
+'use client';
+
 import Image from 'next/image';
-import './globals.css';
+import { useEffect, useState } from 'react';
+
+const PRODUCE = [
+  { cls: 'pc-fruits',  emoji: '🍋', name: 'Seasonal Fruits',    tag: 'Tree-Fresh',    desc: 'Mangoes, guavas, papayas, bananas — harvested at peak ripeness and delivered same day.' },
+  { cls: 'pc-veggies', emoji: '🥦', name: 'Fresh Vegetables',   tag: 'Chemical-Free', desc: 'Tomatoes, brinjal, okra, bitter gourd — grown without synthetic chemicals or pesticides.' },
+  { cls: 'pc-leafy',   emoji: '🥬', name: 'Leafy Greens',       tag: 'Organic',       desc: 'Spinach, fenugreek, coriander — tender, nutrient-rich leaves picked fresh every morning.' },
+  { cls: 'pc-root',    emoji: '🥕', name: 'Root Vegetables',    tag: 'Soil-Rich',     desc: 'Carrots, beetroot, sweet potato, radish — deep-rooted in mineral-rich organic soil.' },
+  { cls: 'pc-herbs',   emoji: '🌿', name: 'Herbs & Medicinal',  tag: 'Natural',       desc: 'Tulsi, curry leaves, lemongrass, ginger — traditional varieties grown the natural way.' },
+  { cls: 'pc-exotic',  emoji: '🍈', name: 'Exotic & Rare',      tag: 'Limited',       desc: 'Dragon fruit, starfruit, jackfruit — specialty crops grown with care and patience.' },
+];
+
+const WHY = [
+  { icon: '🌱', title: 'Zero Chemicals',        desc: 'No synthetic fertilisers, pesticides, or hormones. Only natural compost and organic inputs.' },
+  { icon: '💧', title: 'Natural Water Source',  desc: 'Crops irrigated from bore-well and rainwater harvesting — pure from the ground up.' },
+  { icon: '☀️', title: 'Sun-Ripened Always',    desc: 'Nothing is artificially ripened. Every fruit and vegetable matures on the plant, naturally.' },
+  { icon: '🔄', title: 'Seasonal Rotation',     desc: 'Crops rotate seasonally to restore soil health and maintain nutritional quality year-round.' },
+  { icon: '📦', title: 'Farm to Your Door',     desc: 'Harvested, sorted, and dispatched on the same day. Zero cold-storage intermediaries.' },
+  { icon: '👨‍🌾', title: '15 Years of Expertise', desc: 'Since 2010, our farmers have honed traditional techniques passed down through generations.' },
+];
+
+const GALLERY = [
+  { cls: 'gi-1', label: 'Morning Harvest' },
+  { cls: 'gi-2', label: 'Sun-Ripened Fruits' },
+  { cls: 'gi-3', label: 'Green Fields' },
+  { cls: 'gi-4', label: 'Fresh Produce' },
+  { cls: 'gi-5', label: "Nature's Bounty" },
+];
 
 export default function Home() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add('visible');
+        }),
+      { threshold: 0.12 }
+    );
+    document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale').forEach((el) =>
+      observer.observe(el)
+    );
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      observer.disconnect();
+    };
+  }, []);
+
   return (
-    <main className="page-shell">
-      <section className="hero">
-        <div className="hero-copy">
-          <p className="eyebrow">Farmhouse since 2010</p>
-          <h1>Vrundavan Farmhouse</h1>
-          <p>Welcome to Vrundavan, a peaceful farmhouse retreat rooted in nature and warm hospitality.</p>
-          <div className="stats-grid">
+    <>
+      {/* ── Navbar ── */}
+      <nav className={`navbar${scrolled ? ' scrolled' : ''}`}>
+        <span className="nav-brand">Vrundavan Farm</span>
+        <ul className="nav-links">
+          <li><a href="#produce">Our Produce</a></li>
+          <li><a href="#story">Our Story</a></li>
+          <li><a href="#gallery">Gallery</a></li>
+          <li><a href="#contact" className="nav-cta">Order Fresh</a></li>
+        </ul>
+      </nav>
+
+      {/* ── Hero ── */}
+      <section className="hero" aria-label="Hero">
+        <div className="hero-blob hero-blob-1" />
+        <div className="hero-blob hero-blob-2" />
+        <div className="particle p1" />
+        <div className="particle p2" />
+        <div className="particle p3" />
+        <div className="particle p4" />
+        <div className="particle p5" />
+
+        <div className="hero-left">
+          <p className="hero-eyebrow">Natural Farm Since 2010</p>
+          <h1 className="hero-title">
+            Straight From<br />
+            <span className="hero-title-accent">Farm to Your</span><br />
+            Table
+          </h1>
+          <p className="hero-sub">
+            At Vrundavan Farm, we grow fresh fruits and vegetables the way
+            nature intended — no chemicals, no shortcuts, just honest soil,
+            clean water, and abundant sunshine.
+          </p>
+          <div className="hero-actions">
+            <a href="#contact" className="btn-primary">Order Fresh Produce →</a>
+            <a href="#produce" className="btn-outline">See What We Grow</a>
+          </div>
+        </div>
+
+        <div className="hero-right">
+          <div className="logo-stage">
+            <div className="orb orb-3" />
+            <div className="logo-spin-ring" />
+            <div className="orb orb-1" />
+            <div className="orb orb-2" />
+            <Image
+              src="/farmlogo.png"
+              alt="Vrundavan Farm — Natural Fruits & Vegetables"
+              width={380}
+              height={260}
+              priority
+              className="logo-img"
+            />
+          </div>
+        </div>
+
+        <div className="scroll-hint" aria-hidden="true">
+          <span>Scroll</span>
+          <div className="scroll-line" />
+        </div>
+      </section>
+
+      {/* ── Stats ── */}
+      <div className="stats-bar" role="region" aria-label="Farm stats">
+        {[
+          { num: '15+', lbl: 'Years Farming' },
+          { num: '40+', lbl: 'Crop Varieties' },
+          { num: '12',  lbl: 'Acres of Land' },
+          { num: '100%', lbl: 'Chemical-Free' },
+        ].map((s, i) => (
+          <div key={s.lbl} className={`stat-cell reveal d${i + 1}`}>
+            <div className="stat-num">{s.num}</div>
+            <div className="stat-lbl">{s.lbl}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Produce ── */}
+      <section id="produce" className="section produce-section">
+        <div className="container">
+          <div className="reveal">
+            <p className="eyebrow">What We Grow</p>
+            <h2 className="sec-title">Fresh from Vrundavan Fields</h2>
+            <p className="sec-desc">
+              Every crop is grown in clean, chemical-free soil using traditional
+              organic methods refined over 15 years of farming.
+            </p>
+          </div>
+          <div className="produce-grid">
+            {PRODUCE.map((p, i) => (
+              <article key={p.name} className={`produce-card reveal d${(i % 3) + 1}`}>
+                <div className={`produce-card-banner ${p.cls}`}>
+                  <span>{p.emoji}</span>
+                </div>
+                <div className="produce-card-body">
+                  <h3 className="produce-card-title">{p.name}</h3>
+                  <p className="produce-card-desc">{p.desc}</p>
+                  <span className="produce-tag">{p.tag}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Why Natural ── */}
+      <section className="section why-section">
+        <div className="container">
+          <div className="why-header">
             <div>
-              <strong>Established</strong>
-              <span>2010</span>
+                <p className="eyebrow eyebrow-gold-light">
+                Why Natural Farming
+              </p>
+              <h2 className="sec-title reveal" style={{ color: 'white', maxWidth: 480 }}>
+                The Vrundavan Difference
+              </h2>
             </div>
-            <div>
-              <strong>Location</strong>
-              <span>Rural retreat</span>
+            <p className="sec-desc reveal" style={{ color: 'rgba(255,255,255,.62)' }}>
+              We believe food grown in harmony with nature is food that truly nourishes.
+              Every practice on our farm reflects that belief.
+            </p>
+          </div>
+          <div className="why-grid">
+            {WHY.map((w, i) => (
+              <article key={w.title} className={`why-card reveal d${(i % 3) + 1}`}>
+                <span className="why-icon">{w.icon}</span>
+                <h3 className="why-title">{w.title}</h3>
+                <p className="why-desc">{w.desc}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Story ── */}
+      <section id="story" className="section story-section">
+        <div className="container">
+          <div className="story-grid">
+            <div className="story-img-stack reveal-left">
+              <div className="story-card story-card-main">
+                <Image
+                  src="/farmlogo.png"
+                  alt="Vrundavan Farm"
+                  width={300}
+                  height={380}
+                  style={{ objectFit: 'contain', padding: '24px' }}
+                />
+              </div>
+              <div className="story-card story-card-secondary">
+                <div className="story-card-content">
+                  <div className="story-card-big">2010</div>
+                  <div className="story-card-small">Established</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="story-text reveal-right">
+              <p className="eyebrow eyebrow-leaf">Our Story</p>
+              <h2 className="sec-title">Rooted in Nature, Grown with Love</h2>
+              <p className="sec-desc">
+                Vrundavan Farm began in 2010 with a simple conviction — that the
+                best food comes from land that is cared for, not exploited. Over
+                fifteen years, we have cultivated more than 40 varieties of fruits
+                and vegetables on 12 acres of chemical-free land.
+              </p>
+              <div className="story-points">
+                {[
+                  { icon: '🌍', title: 'Soil First Approach',    desc: 'We enrich the soil naturally through composting, crop rotation, and bio-fertilisers.' },
+                  { icon: '🤝', title: 'Community Rooted',       desc: 'Employing local farmers and supporting sustainable livelihoods in our region.' },
+                  { icon: '🌦️', title: 'Climate Adaptive',       desc: 'Seasonal crop planning that works with local weather patterns, not against them.' },
+                ].map((pt) => (
+                  <div key={pt.title} className="story-point">
+                    <div className="story-icon">{pt.icon}</div>
+                    <div>
+                      <div className="story-point-title">{pt.title}</div>
+                      <div className="story-point-desc">{pt.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-        <div className="hero-image">
-          <Image src="/farmlogo.png" alt="Vrundavan Farmhouse Logo" width={420} height={280} priority />
+      </section>
+
+      {/* ── Gallery ── */}
+      <section id="gallery" className="section gallery-section">
+        <div className="container">
+          <div className="reveal">
+            <p className="eyebrow">Life at the Farm</p>
+            <h2 className="sec-title">A Glimpse of Vrundavan</h2>
+          </div>
+          <div className="gallery-grid">
+            {GALLERY.map((g, i) => (
+              <div key={g.label} className={`g-card reveal-scale d${i + 1}`}>
+                <div className={`g-inner ${g.cls}`}>
+                  <span className="g-label">{g.label}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="details">
-        <h2>About Vrundavan</h2>
-        <p>
-          Vrundavan Farmhouse opened in 2010 with a vision to combine calm natural living, comfortable farmhouse lodging, and curated family experiences.
+      {/* ── CTA ── */}
+      <section id="contact" className="cta-section">
+        <h2 className="cta-title reveal">Get Fresh Produce Delivered</h2>
+        <p className="cta-desc reveal">
+          Order directly from Vrundavan Farm — harvested this morning, at your
+          door by evening. 100% natural, zero compromise.
         </p>
-        <div className="feature-list">
-          <article>
-            <h3>Homegrown Hospitality</h3>
-            <p>A welcoming farmhouse environment that feels like a home away from home.</p>
-          </article>
-          <article>
-            <h3>Natural Surroundings</h3>
-            <p>Green fields, quiet mornings, and open skies to refresh and recharge.</p>
-          </article>
-          <article>
-            <h3>Simple Relaxation</h3>
-            <p>Outdoor spaces, local produce, and laid-back farmhouse charm.</p>
-          </article>
-        </div>
+        <a href="tel:+91" className="btn-dark reveal">📞 Call to Order Now</a>
       </section>
-    </main>
+
+      {/* ── Footer ── */}
+      <footer>
+        <div className="footer-grid">
+          <div>
+            <div className="footer-brand">Vrundavan Farm</div>
+            <p className="footer-tagline">
+              Natural fruits and vegetables grown without chemicals since 2010.
+              Because real food starts with real farming.
+            </p>
+          </div>
+          <div className="footer-col">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><a href="#produce">Our Produce</a></li>
+              <li><a href="#story">Our Story</a></li>
+              <li><a href="#gallery">Gallery</a></li>
+              <li><a href="#contact">Order Fresh</a></li>
+            </ul>
+          </div>
+          <div className="footer-col">
+            <h4>Contact</h4>
+            <ul>
+              <li><a href="#">Village Farm, India</a></li>
+              <li><a href="tel:+91">Call Us</a></li>
+              <li><a href="mailto:info@vrundavan.com">info@vrundavan.com</a></li>
+            </ul>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <span>© 2026 Vrundavan Farm. All rights reserved.</span>
+          <span>Grown naturally since 2010</span>
+        </div>
+      </footer>
+    </>
   );
 }
