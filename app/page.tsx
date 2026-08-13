@@ -2,8 +2,10 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useCollection } from '@/lib/useCollection';
+import type { ProduceItem, CropFruitItem } from '@/lib/types';
 
-const PRODUCE = [
+const PRODUCE_DEFAULT = [
   { cls: 'pc-fruits',  emoji: '🍋', name: 'Seasonal Fruits',    tag: 'Tree-Fresh',    desc: 'Mangoes, guavas, papayas, bananas — harvested at peak ripeness and delivered same day.' },
   { cls: 'pc-veggies', emoji: '🥦', name: 'Fresh Vegetables',   tag: 'Chemical-Free', desc: 'Tomatoes, brinjal, okra, bitter gourd — grown without synthetic chemicals or pesticides.' },
   { cls: 'pc-leafy',   emoji: '🥬', name: 'Leafy Greens',       tag: 'Natural',       desc: 'Spinach, fenugreek, coriander — tender, nutrient-rich leaves picked fresh every morning.' },
@@ -20,25 +22,29 @@ const WHY = [
   { icon: '👨‍🌾', title: '15 Years of Expertise', desc: 'Since 2010, our farmers have honed traditional techniques passed down through generations.' },
 ];
 
-const CROPS = [
-  { cls: 'crop-bajra',     emoji: '🌾', img: '/crops/bajra.jpg',     name: 'Pearl Millet', local: 'Bajra',    desc: 'Drought-resistant staple grain cultivated across our drylands, rich in iron and fibre.' },
-  { cls: 'crop-wheat',     emoji: '🌿', img: '/crops/wheat.jpg',     name: 'Wheat',        local: 'Ghau',     desc: 'High-yield wheat varieties grown in cooler months, milled locally for wholesome flour.' },
-  { cls: 'crop-cotton',    emoji: '🌸', img: '/crops/cotton.jpg',    name: 'Cotton',       local: 'Kapas',    desc: 'Premium-quality cotton bolls cultivated on well-drained soil for superior fibre yield.' },
-  { cls: 'crop-castor',    emoji: '🌱', img: '/crops/castor.jpg',    name: 'Castor',       local: 'Erandi',   desc: 'High oil-content castor beans grown for industrial and medicinal applications.' },
-  { cls: 'crop-coriander', emoji: '🌿', img: '/crops/coriander.jpg', name: 'Coriander',    local: 'Dhana',    desc: 'Aromatic coriander seeds and leaves — a staple herb across Indian kitchens.' },
-  { cls: 'crop-groundnut', emoji: '🥜', img: '/crops/groundnut.jpg', name: 'Groundnut',    local: 'Mungfali', desc: 'Nutrient-rich peanuts grown in sandy loam soil, harvested for oil and direct use.' },
+const CROPS_DEFAULT = [
+  { emoji: '🌾', imageUrl: '/crops/bajra.jpg',     name: 'Pearl Millet', local: 'Bajra',    desc: 'Drought-resistant staple grain cultivated across our drylands, rich in iron and fibre.' },
+  { emoji: '🌿', imageUrl: '/crops/wheat.jpg',     name: 'Wheat',        local: 'Ghau',     desc: 'High-yield wheat varieties grown in cooler months, milled locally for wholesome flour.' },
+  { emoji: '🌸', imageUrl: '/crops/cotton.jpg',    name: 'Cotton',       local: 'Kapas',    desc: 'Premium-quality cotton bolls cultivated on well-drained soil for superior fibre yield.' },
+  { emoji: '🌱', imageUrl: '/crops/castor.jpg',    name: 'Castor',       local: 'Erandi',   desc: 'High oil-content castor beans grown for industrial and medicinal applications.' },
+  { emoji: '🌿', imageUrl: '/crops/coriander.jpg', name: 'Coriander',    local: 'Dhana',    desc: 'Aromatic coriander seeds and leaves — a staple herb across Indian kitchens.' },
+  { emoji: '🥜', imageUrl: '/crops/groundnut.jpg', name: 'Groundnut',    local: 'Mungfali', desc: 'Nutrient-rich peanuts grown in sandy loam soil, harvested for oil and direct use.' },
 ];
 
-const FRUITS = [
-  { cls: 'fruit-mango',    emoji: '🥭', img: '/fruits/mango.jpg',        name: 'Mango',        local: 'Aam',      desc: 'Sun-ripened alphonso and local varieties — sweet, fibrous, and bursting with flavour.' },
-  { cls: 'fruit-coconut',  emoji: '🥥', img: '/fruits/coconut.jpg',      name: 'Coconut',      local: 'Nariyal',  desc: 'Tall coconut palms yielding tender water and mature flesh throughout the year.' },
-  { cls: 'fruit-mulberry', emoji: '🫐', img: '/fruits/mulberry.jpg',     name: 'Mulberry',     local: 'Shetur',   desc: 'Juicy dark mulberries harvested fresh — rich in antioxidants and natural sweetness.' },
-  { cls: 'fruit-sitafal',  emoji: '🍈', img: '/fruits/custard-apple.jpg',name: 'Custard Apple',local: 'Sitafal',  desc: 'Creamy, fragrant custard apples grown in rich soil — a seasonal favourite.' },
-  { cls: 'fruit-banana',   emoji: '🍌', img: '/fruits/banana.jpg',       name: 'Banana',       local: 'Kela',     desc: 'Year-round banana harvest — naturally ripened, starchy and full of potassium.' },
-  { cls: 'fruit-lemon',    emoji: '🍋', img: '/fruits/lemon.jpg',        name: 'Lemon',        local: 'Limbu',    desc: 'Tangy, aromatic lemons used fresh in kitchens and for traditional remedies.' },
-  { cls: 'fruit-mosambi',  emoji: '🍊', img: '/fruits/sweet-lime.jpg',   name: 'Sweet Lime',   local: 'Mosambi',  desc: 'Mildly sweet citrus with refreshing juice — perfect for summer drinking.' },
-  { cls: 'fruit-jamun',    emoji: '🫐', img: null,                       name: 'Jamun',        local: 'Jambu',    desc: 'Deep-purple Indian blackberry with a distinct tang — prized for its health benefits.' },
+const FRUITS_DEFAULT = [
+  { emoji: '🥭', imageUrl: '/fruits/mango.jpg',        name: 'Mango',        local: 'Aam',      desc: 'Sun-ripened alphonso and local varieties — sweet, fibrous, and bursting with flavour.' },
+  { emoji: '🥥', imageUrl: '/fruits/coconut.jpg',      name: 'Coconut',      local: 'Nariyal',  desc: 'Tall coconut palms yielding tender water and mature flesh throughout the year.' },
+  { emoji: '🫐', imageUrl: '/fruits/mulberry.jpg',     name: 'Mulberry',     local: 'Shetur',   desc: 'Juicy dark mulberries harvested fresh — rich in antioxidants and natural sweetness.' },
+  { emoji: '🍈', imageUrl: '/fruits/custard-apple.jpg',name: 'Custard Apple',local: 'Sitafal',  desc: 'Creamy, fragrant custard apples grown in rich soil — a seasonal favourite.' },
+  { emoji: '🍌', imageUrl: '/fruits/banana.jpg',       name: 'Banana',       local: 'Kela',     desc: 'Year-round banana harvest — naturally ripened, starchy and full of potassium.' },
+  { emoji: '🍋', imageUrl: '/fruits/lemon.jpg',        name: 'Lemon',        local: 'Limbu',    desc: 'Tangy, aromatic lemons used fresh in kitchens and for traditional remedies.' },
+  { emoji: '🍊', imageUrl: '/fruits/sweet-lime.jpg',   name: 'Sweet Lime',   local: 'Mosambi',  desc: 'Mildly sweet citrus with refreshing juice — perfect for summer drinking.' },
+  { emoji: '🫐', imageUrl: null,                       name: 'Jamun',        local: 'Jambu',    desc: 'Deep-purple Indian blackberry with a distinct tang — prized for its health benefits.' },
 ];
+
+const PRODUCE_CLS = ['pc-fruits', 'pc-veggies', 'pc-leafy', 'pc-root', 'pc-exotic'];
+const CROP_CLS = ['crop-bajra', 'crop-wheat', 'crop-cotton', 'crop-castor', 'crop-coriander', 'crop-groundnut'];
+const FRUIT_CLS = ['fruit-mango', 'fruit-coconut', 'fruit-mulberry', 'fruit-sitafal', 'fruit-banana', 'fruit-lemon', 'fruit-mosambi', 'fruit-jamun'];
 
 const GALLERY = [
   { cls: 'gi-1', label: 'Morning Harvest' },
@@ -50,11 +56,21 @@ const GALLERY = [
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
+  const { items: produceItems, loading: produceLoading } = useCollection<ProduceItem>('produce');
+  const { items: cropItems, loading: cropsLoading } = useCollection<CropFruitItem>('crops');
+  const { items: fruitItems, loading: fruitsLoading } = useCollection<CropFruitItem>('fruits');
+
+  const PRODUCE = produceLoading || produceItems.length === 0 ? PRODUCE_DEFAULT : produceItems;
+  const CROPS = cropsLoading || cropItems.length === 0 ? CROPS_DEFAULT : cropItems;
+  const FRUITS = fruitsLoading || fruitItems.length === 0 ? FRUITS_DEFAULT : fruitItems;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
+  useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
@@ -65,12 +81,8 @@ export default function Home() {
     document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale').forEach((el) =>
       observer.observe(el)
     );
-
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      observer.disconnect();
-    };
-  }, []);
+    return () => observer.disconnect();
+  }, [PRODUCE, CROPS, FRUITS]);
 
   return (
     <>
@@ -162,7 +174,7 @@ export default function Home() {
           <div className="produce-grid">
             {PRODUCE.map((p, i) => (
               <article key={p.name} className={`produce-card reveal d${(i % 3) + 1}`}>
-                <div className={`produce-card-banner ${p.cls}`}>
+                <div className={`produce-card-banner ${PRODUCE_CLS[i % PRODUCE_CLS.length]}`}>
                   <span>{p.emoji}</span>
                 </div>
                 <div className="produce-card-body">
@@ -270,12 +282,12 @@ export default function Home() {
           <div className="crops-grid">
             {CROPS.map((c, i) => (
               <article key={c.name} className={`crop-card reveal d${(i % 3) + 1}`}>
-                {c.img ? (
+                {c.imageUrl ? (
                   <div className="fruit-img-wrap">
-                    <Image src={c.img} alt={c.name} fill style={{ objectFit: 'cover' }} sizes="(max-width:768px) 50vw, 33vw" />
+                    <Image src={c.imageUrl} alt={c.name} fill style={{ objectFit: 'cover' }} sizes="(max-width:768px) 50vw, 33vw" />
                   </div>
                 ) : (
-                  <div className={`crop-img-placeholder ${c.cls}`}>
+                  <div className={`crop-img-placeholder ${CROP_CLS[i % CROP_CLS.length]}`}>
                     <span>{c.emoji}</span>
                   </div>
                 )}
@@ -304,12 +316,12 @@ export default function Home() {
           <div className="fruits-grid">
             {FRUITS.map((f, i) => (
               <article key={f.name} className={`crop-card reveal d${(i % 4) + 1}`}>
-                {f.img ? (
+                {f.imageUrl ? (
                   <div className="fruit-img-wrap">
-                    <Image src={f.img} alt={f.name} fill style={{ objectFit: 'cover' }} sizes="(max-width:768px) 50vw, 25vw" />
+                    <Image src={f.imageUrl} alt={f.name} fill style={{ objectFit: 'cover' }} sizes="(max-width:768px) 50vw, 25vw" />
                   </div>
                 ) : (
-                  <div className={`crop-img-placeholder ${f.cls}`}>
+                  <div className={`crop-img-placeholder ${FRUIT_CLS[i % FRUIT_CLS.length]}`}>
                     <span>{f.emoji}</span>
                     <span className="crop-placeholder-label">Add photo</span>
                   </div>
