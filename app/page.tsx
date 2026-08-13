@@ -6,11 +6,11 @@ import { useCollection } from '@/lib/useCollection';
 import type { ProduceItem, CropFruitItem } from '@/lib/types';
 
 const PRODUCE_DEFAULT = [
-  { cls: 'pc-fruits',  emoji: '🍋', name: 'Seasonal Fruits',    tag: 'Tree-Fresh',    desc: 'Mangoes, guavas, papayas, bananas — harvested at peak ripeness and delivered same day.' },
-  { cls: 'pc-veggies', emoji: '🥦', name: 'Fresh Vegetables',   tag: 'Chemical-Free', desc: 'Tomatoes, brinjal, okra, bitter gourd — grown without synthetic chemicals or pesticides.' },
-  { cls: 'pc-leafy',   emoji: '🥬', name: 'Leafy Greens',       tag: 'Natural',       desc: 'Spinach, fenugreek, coriander — tender, nutrient-rich leaves picked fresh every morning.' },
-  { cls: 'pc-root',    emoji: '🥕', name: 'Root Vegetables',    tag: 'Soil-Rich',     desc: 'Carrots, beetroot, sweet potato, radish — deep-rooted in mineral-rich natural soil.' },
-  { cls: 'pc-exotic',  emoji: '🍈', name: 'Exotic & Rare',      tag: 'Limited',       desc: 'Dragon fruit, starfruit, jackfruit — specialty crops grown with care and patience.' },
+  { emoji: '🍋', name: 'Seasonal Fruits',    tag: 'Tree-Fresh',    desc: 'Mangoes, guavas, papayas, bananas — harvested at peak ripeness and delivered same day.' },
+  { emoji: '🥦', name: 'Fresh Vegetables',   tag: 'Chemical-Free', desc: 'Tomatoes, brinjal, okra, bitter gourd — grown without synthetic chemicals or pesticides.' },
+  { emoji: '🥬', name: 'Leafy Greens',       tag: 'Natural',       desc: 'Spinach, fenugreek, coriander — tender, nutrient-rich leaves picked fresh every morning.' },
+  { emoji: '🥕', name: 'Root Vegetables',    tag: 'Soil-Rich',     desc: 'Carrots, beetroot, sweet potato, radish — deep-rooted in mineral-rich natural soil.' },
+  { emoji: '🍈', name: 'Exotic & Rare',      tag: 'Limited',       desc: 'Dragon fruit, starfruit, jackfruit — specialty crops grown with care and patience.' },
 ];
 
 const WHY = [
