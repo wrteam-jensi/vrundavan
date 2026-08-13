@@ -13,6 +13,32 @@ export interface Settings {
   ratePerHour: number;
 }
 
+export interface Farmer {
+  id: string;
+  name: string;
+  mobile: string;
+  village: string;
+  farmDetails: string;
+}
+
+export interface HarvestEntry {
+  id: string;
+  farmerId: string;
+  farmerName: string;
+  farmerMobile: string;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:MM
+  endTime: string; // HH:MM
+  hours: number;
+  ratePerHour: number;
+  totalAmount: number;
+  advanceAmount: number;
+  paidAmount: number;
+  pendingAmount: number;
+  note: string;
+  createdAt: number;
+}
+
 export interface CropFruitItem {
   id: string;
   emoji: string;

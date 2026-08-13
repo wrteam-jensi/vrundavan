@@ -125,8 +125,8 @@ export default function CropFruitAdmin({ collectionName, title }: { collectionNa
                 <div style={{ fontWeight: 600 }}>{item.name} <span style={{ fontWeight: 400, color: '#888', fontSize: 12 }}>({item.local})</span></div>
                 <div style={{ fontSize: 13, color: '#666' }}>{item.desc}</div>
               </div>
-              <button onClick={() => startEdit(item)} style={{ padding: '6px 12px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>Edit</button>
-              <button onClick={() => onDelete(item)} style={{ padding: '6px 12px', border: '1px solid #f0c4c4', color: '#c0392b', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>Delete</button>
+              <button type="button" onClick={() => startEdit(item)} style={{ padding: '6px 12px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>Edit</button>
+              <button type="button" onClick={() => onDelete(item)} style={{ padding: '6px 12px', border: '1px solid #f0c4c4', color: '#c0392b', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>Delete</button>
             </div>
           ))}
         </div>
