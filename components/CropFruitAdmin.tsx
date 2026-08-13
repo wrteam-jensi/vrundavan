@@ -3,6 +3,7 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { useCollection } from '@/lib/useCollection';
 import { createDoc, deleteDocById, deleteImage, updateDocById, uploadImage } from '@/lib/crud';
+import { CROPS_DEFAULT, FRUITS_DEFAULT } from '@/lib/defaults';
 import type { CropFruitItem } from '@/lib/types';
 
 const EMPTY = { emoji: '', name: '', local: '', desc: '' };
@@ -14,7 +15,18 @@ export default function CropFruitAdmin({ collectionName, title }: { collectionNa
   const [existingImage, setExistingImage] = useState<{ url: string; path: string } | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+
+  const seedDefaults = async () => {
+    setSeeding(true);
+    try {
+      const defaults = collectionName === 'crops' ? CROPS_DEFAULT : FRUITS_DEFAULT;
+      for (const item of defaults) await createDoc(collectionName, item);
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const startEdit = (item: CropFruitItem) => {
     setEditingId(item.id);
@@ -90,6 +102,12 @@ export default function CropFruitAdmin({ collectionName, title }: { collectionNa
           )}
         </div>
       </form>
+
+      {!loading && items.length === 0 && (
+        <button type="button" onClick={seedDefaults} disabled={seeding} style={{ marginBottom: 16, padding: '8px 16px', background: '#fff', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer' }}>
+          {seeding ? 'Seeding…' : `Seed default ${title.toLowerCase()}`}
+        </button>
+      )}
 
       {loading ? (
         <p>Loading…</p>

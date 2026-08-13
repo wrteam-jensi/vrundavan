@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useCollection } from '@/lib/useCollection';
 import { createDoc, deleteDocById, updateDocById } from '@/lib/crud';
+import { PRODUCE_DEFAULT } from '@/lib/defaults';
 import type { ProduceItem } from '@/lib/types';
 
 const EMPTY = { emoji: '', name: '', tag: '', desc: '' };
@@ -12,6 +13,16 @@ export default function ProduceAdmin() {
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+
+  const seedDefaults = async () => {
+    setSeeding(true);
+    try {
+      for (const item of PRODUCE_DEFAULT) await createDoc('produce', item);
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const startEdit = (item: ProduceItem) => {
     setEditingId(item.id);
@@ -65,6 +76,12 @@ export default function ProduceAdmin() {
           )}
         </div>
       </form>
+
+      {!loading && items.length === 0 && (
+        <button type="button" onClick={seedDefaults} disabled={seeding} style={{ marginBottom: 16, padding: '8px 16px', background: '#fff', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer' }}>
+          {seeding ? 'Seeding…' : 'Seed default produce categories'}
+        </button>
+      )}
 
       {loading ? (
         <p>Loading…</p>

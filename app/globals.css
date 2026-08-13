@@ -70,7 +70,7 @@ img { display:block; }
   50%      { border-color:rgba(82,183,136,.70); }
 }
 @keyframes drift {
-  0%   { transform:translateY(0)   opacity:.5; }
+  0%   { transform:translateY(0);   opacity:.5; }
   50%  { transform:translateY(-20px); opacity:.9; }
   100% { transform:translateY(0);   opacity:.5; }
 }

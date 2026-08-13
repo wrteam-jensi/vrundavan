@@ -9,6 +9,10 @@ export interface ProduceItem {
   order: number;
 }
 
+export interface Settings {
+  ratePerHour: number;
+}
+
 export interface CropFruitItem {
   id: string;
   emoji: string;
