@@ -435,18 +435,31 @@ export default function PakAdmin() {
                 </div>
 
                 <div className="admin-card-actions">
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => setExpandedId(expanded ? null : pak.id)}>
-                    {expanded ? 'Hide Expenses' : `Expenses (${pak.expenses.length})`}
+                  <button type="button" className="btn btn-primary btn-sm" onClick={() => setExpandedId(expanded ? null : pak.id)}>
+                    💰 {expanded ? 'Hide Cost Entries' : `Add / View Cost (${pak.expenses.length})`}
                   </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => (harvestId === pak.id ? cancelHarvest() : startHarvest(pak))}
-                  >
-                    {harvestId === pak.id ? 'Cancel Harvest' : pak.harvestedDate ? 'Edit Harvest' : 'Mark Harvested'}
+                  {!pak.harvestedDate && harvestId !== pak.id && (
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => startHarvest(pak)}>
+                      🌾 Mark Harvested
+                    </button>
+                  )}
+                  {pak.harvestedDate && harvestId !== pak.id && (
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => startHarvest(pak)}>
+                      ✏️ Edit Harvest
+                    </button>
+                  )}
+                  {harvestId === pak.id && (
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={cancelHarvest}>
+                      Cancel Harvest
+                    </button>
+                  )}
+                  <span style={{ flex: '1 1 auto' }} />
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(pak)} title="Edit pak details" aria-label="Edit pak details">
+                    ⚙️
                   </button>
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(pak)}>Edit</button>
-                  <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(pak)}>Delete</button>
+                  <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(pak)} title="Delete pak" aria-label="Delete pak">
+                    🗑️
+                  </button>
                 </div>
 
                 {harvestId === pak.id && (
