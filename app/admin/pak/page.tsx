@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { createPak, deletePak, updatePak, usePaks } from '@/lib/paks';
+import { useVaadis } from '@/lib/vaadis';
 import { downloadCsv } from '@/lib/csvExport';
 import type { ExpenseCategory, Pak, PakExpense } from '@/lib/types';
 import SkeletonList from '@/components/SkeletonList';
@@ -34,6 +35,7 @@ function revenueOf(pak: Pak) {
 }
 
 const EMPTY_PAK = {
+  vaadiId: '',
   cropName: '',
   plantedDate: todayStr(),
   harvestedDate: '' as string,
@@ -51,6 +53,7 @@ const EMPTY_EXPENSE = {
 };
 
 type ExpenseCsvRow = {
+  vaadiName: string;
   cropName: string;
   plantedDate: string;
   harvestedDate: string;
@@ -61,6 +64,7 @@ type ExpenseCsvRow = {
 };
 
 const CSV_COLUMNS: { key: keyof ExpenseCsvRow; label: string }[] = [
+  { key: 'vaadiName', label: 'Vaadi' },
   { key: 'cropName', label: 'Crop (Pak)' },
   { key: 'plantedDate', label: 'Vavayo (Planted)' },
   { key: 'harvestedDate', label: 'Nikdyo (Harvested)' },
@@ -73,9 +77,12 @@ const CSV_COLUMNS: { key: keyof ExpenseCsvRow; label: string }[] = [
 export default function PakAdmin() {
   const { showToast, confirm } = useAdminUI();
   const { paks, loading } = usePaks();
+  const { vaadis } = useVaadis();
+  const vaadiById = useMemo(() => new Map(vaadis.map((v) => [v.id, v])), [vaadis]);
   const [form, setForm] = useState(EMPTY_PAK);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [vaadiFilter, setVaadiFilter] = useState('');
   const [cropFilter, setCropFilter] = useState('');
   const [yearFilter, setYearFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -85,6 +92,7 @@ export default function PakAdmin() {
   const startEdit = (pak: Pak) => {
     setEditingId(pak.id);
     setForm({
+      vaadiId: pak.vaadiId,
       cropName: pak.cropName,
       plantedDate: pak.plantedDate,
       harvestedDate: pak.harvestedDate ?? '',
@@ -106,6 +114,7 @@ export default function PakAdmin() {
     try {
       const existing = editingId ? paks.find((p) => p.id === editingId) : null;
       const data = {
+        vaadiId: form.vaadiId,
         cropName: form.cropName,
         plantedDate: form.plantedDate,
         harvestedDate: form.harvestedDate || null,
@@ -170,6 +179,7 @@ export default function PakAdmin() {
 
   const filtered = paks.filter(
     (p) =>
+      (!vaadiFilter || p.vaadiId === vaadiFilter) &&
       (!cropFilter || p.cropName === cropFilter) &&
       (!yearFilter || p.plantedDate.startsWith(yearFilter)) &&
       (!statusFilter || (statusFilter === 'growing' ? !p.harvestedDate : !!p.harvestedDate))
@@ -185,10 +195,34 @@ export default function PakAdmin() {
     };
   }, [filtered]);
 
+  const byVaadi = useMemo(() => {
+    const map = new Map<string, Pak[]>();
+    for (const p of filtered) {
+      const arr = map.get(p.vaadiId) ?? [];
+      arr.push(p);
+      map.set(p.vaadiId, arr);
+    }
+    return Array.from(map.entries())
+      .map(([vaadiId, vaadiPaks]) => {
+        const cost = Math.round(vaadiPaks.reduce((s, p) => s + totalCost(p), 0) * 100) / 100;
+        const revenue = Math.round(vaadiPaks.reduce((s, p) => s + revenueOf(p), 0) * 100) / 100;
+        const profit = Math.round((revenue - cost) * 100) / 100;
+        const vaadi = vaadiById.get(vaadiId);
+        const partnerShares = (vaadi?.partners ?? []).map((p) => ({
+          ...p,
+          amount: Math.round((profit * p.sharePercent) / 100 * 100) / 100,
+        }));
+        return { vaadiId, vaadiName: vaadi?.name ?? '(Unassigned)', paks: vaadiPaks, cost, revenue, profit, partnerShares };
+      })
+      .sort((a, b) => b.cost - a.cost);
+  }, [filtered, vaadiById]);
+
   const exportCsv = () => {
-    const rows: ExpenseCsvRow[] = filtered.flatMap((p) =>
-      p.expenses.length
+    const rows: ExpenseCsvRow[] = filtered.flatMap((p) => {
+      const vaadiName = vaadiById.get(p.vaadiId)?.name ?? '(Unassigned)';
+      return p.expenses.length
         ? p.expenses.map((ex) => ({
+            vaadiName,
             cropName: p.cropName,
             plantedDate: p.plantedDate,
             harvestedDate: p.harvestedDate ?? '',
@@ -199,6 +233,7 @@ export default function PakAdmin() {
           }))
         : [
             {
+              vaadiName,
               cropName: p.cropName,
               plantedDate: p.plantedDate,
               harvestedDate: p.harvestedDate ?? '',
@@ -207,8 +242,8 @@ export default function PakAdmin() {
               amount: 0,
               note: '',
             },
-          ]
-    );
+          ];
+    });
     downloadCsv(`pak-${todayStr()}.csv`, CSV_COLUMNS, rows);
   };
 
@@ -233,8 +268,38 @@ export default function PakAdmin() {
         </div>
       </div>
 
+      {byVaadi.length > 0 && (
+        <div className="admin-list" style={{ marginBottom: 16 }}>
+          {byVaadi.map((v) => (
+            <div key={v.vaadiId} className="admin-card">
+              <div className="admin-card-body">
+                <div className="admin-card-title">{v.vaadiName}</div>
+                <div className="admin-card-meta">
+                  {v.paks.length} {v.paks.length === 1 ? 'pak' : 'paks'} · Cost ₹{v.cost} · Revenue ₹{v.revenue} · Profit{' '}
+                  <strong style={{ color: v.profit >= 0 ? '#2e5339' : '#c0392b' }}>₹{v.profit}</strong>
+                </div>
+                {v.partnerShares.length > 0 && (
+                  <div className="admin-card-meta">
+                    {v.partnerShares.map((p) => `${p.name} ${p.sharePercent}% → ₹${p.amount}`).join(' · ')}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <form onSubmit={onSubmit} className="admin-form">
         <div className="admin-form-row">
+          <label className="admin-field">
+            Vaadi
+            <select value={form.vaadiId} onChange={(e) => setForm({ ...form, vaadiId: e.target.value })} required>
+              <option value="" disabled>Select vaadi</option>
+              {vaadis.map((v) => (
+                <option key={v.id} value={v.id}>{v.name}</option>
+              ))}
+            </select>
+          </label>
           <label className="admin-field">
             Crop (Pak)
             <input value={form.cropName} onChange={(e) => setForm({ ...form, cropName: e.target.value })} required placeholder="e.g. Wheat, Cotton" />
@@ -280,6 +345,12 @@ export default function PakAdmin() {
       </form>
 
       <div className="admin-filters">
+        <select value={vaadiFilter} onChange={(e) => setVaadiFilter(e.target.value)}>
+          <option value="">All Vaadi</option>
+          {vaadis.map((v) => (
+            <option key={v.id} value={v.id}>{v.name}</option>
+          ))}
+        </select>
         <select value={cropFilter} onChange={(e) => setCropFilter(e.target.value)}>
           <option value="">All Crops</option>
           {cropNames.map((c) => (
@@ -297,11 +368,11 @@ export default function PakAdmin() {
           <option value="growing">Growing</option>
           <option value="harvested">Harvested</option>
         </select>
-        {(cropFilter || yearFilter || statusFilter) && (
+        {(vaadiFilter || cropFilter || yearFilter || statusFilter) && (
           <button
             type="button"
             className="btn btn-secondary"
-            onClick={() => { setCropFilter(''); setYearFilter(''); setStatusFilter(''); }}
+            onClick={() => { setVaadiFilter(''); setCropFilter(''); setYearFilter(''); setStatusFilter(''); }}
           >
             Clear Filter
           </button>
@@ -329,7 +400,7 @@ export default function PakAdmin() {
               <div key={pak.id} className="admin-card" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
                 <div className="admin-card-body">
                   <div className="admin-card-title">
-                    {pak.cropName}{' '}
+                    {pak.cropName} <span className="sub">({vaadiById.get(pak.vaadiId)?.name ?? '(Unassigned)'})</span>{' '}
                     <span className="sub">
                       {pak.plantedDate} → {pak.harvestedDate ?? 'Growing'}
                     </span>

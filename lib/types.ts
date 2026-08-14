@@ -72,8 +72,22 @@ export interface PakExpense {
   note: string;
 }
 
+export interface VaadiPartner {
+  name: string;
+  sharePercent: number;
+}
+
+export interface Vaadi {
+  id: string;
+  name: string;
+  partners: VaadiPartner[];
+  note: string;
+  createdAt: number;
+}
+
 export interface Pak {
   id: string;
+  vaadiId: string;
   cropName: string;
   plantedDate: string; // YYYY-MM-DD, vavayo
   harvestedDate: string | null; // YYYY-MM-DD, nikdyo — null = still growing
