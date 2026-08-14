@@ -11,11 +11,26 @@ import {
   whatsAppUrl,
 } from '@/lib/harvest';
 import { updateRatePerHour, useRatePerHour } from '@/lib/useSettings';
+import { downloadCsv } from '@/lib/csvExport';
 import type { HarvestEntry } from '@/lib/types';
 import MonthlyStatement from '@/components/MonthlyStatement';
 import SkeletonList from '@/components/SkeletonList';
 import { useAdminUI } from '@/components/AdminUI';
 import '../admin.css';
+
+const CSV_COLUMNS = [
+  { key: 'date', label: 'Date' },
+  { key: 'farmerName', label: 'Farmer' },
+  { key: 'startTime', label: 'Start Time' },
+  { key: 'endTime', label: 'End Time' },
+  { key: 'hours', label: 'Hours' },
+  { key: 'ratePerHour', label: 'Rate/Hour' },
+  { key: 'totalAmount', label: 'Total Amount' },
+  { key: 'advanceAmount', label: 'Advance' },
+  { key: 'paidAmount', label: 'Paid' },
+  { key: 'pendingAmount', label: 'Pending' },
+  { key: 'note', label: 'Note' },
+];
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -286,6 +301,13 @@ export default function HarvestingAdmin() {
             Clear Filters
           </button>
         )}
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => downloadCsv(`harvesting-${todayStr()}.csv`, CSV_COLUMNS, filtered)}
+        >
+          Export CSV
+        </button>
       </div>
 
       {loading ? (

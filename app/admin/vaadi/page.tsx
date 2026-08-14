@@ -2,9 +2,11 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { createFarmCropEntry, deleteFarmCropEntry, updateFarmCropEntry, useFarmCropEntries } from '@/lib/farmCrops';
+import { downloadCsv } from '@/lib/csvExport';
 import type { FarmCropEntry } from '@/lib/types';
 import CropProfitSummary from '@/components/CropProfitSummary';
 import YearlyComparison from '@/components/YearlyComparison';
+import CostBreakdownChart from '@/components/CostBreakdownChart';
 import SkeletonList from '@/components/SkeletonList';
 import { useAdminUI } from '@/components/AdminUI';
 import '../admin.css';
@@ -12,6 +14,26 @@ import '../admin.css';
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
+
+const CSV_COLUMNS = [
+  { key: 'saleDate', label: 'Sale Date' },
+  { key: 'cropName', label: 'Crop' },
+  { key: 'seedQty', label: 'Seed Qty' },
+  { key: 'seedUnit', label: 'Seed Unit' },
+  { key: 'costSeed', label: 'Cost - Seed' },
+  { key: 'costFertilizer', label: 'Cost - Khatar' },
+  { key: 'costPesticide', label: 'Cost - Dava' },
+  { key: 'costLabor', label: 'Cost - Majoor' },
+  { key: 'costFuel', label: 'Cost - Fuel' },
+  { key: 'costOther', label: 'Cost - Other' },
+  { key: 'cost', label: 'Total Cost' },
+  { key: 'yieldQty', label: 'Yield Qty' },
+  { key: 'yieldUnit', label: 'Yield Unit' },
+  { key: 'pricePerUnit', label: 'Price/Unit' },
+  { key: 'revenue', label: 'Revenue' },
+  { key: 'profit', label: 'Profit' },
+  { key: 'note', label: 'Note' },
+];
 
 const EMPTY = {
   cropName: '',
@@ -237,6 +259,8 @@ export default function VaadiAdmin() {
 
       <CropProfitSummary entries={filtered} />
 
+      <CostBreakdownChart entries={filtered} />
+
       <YearlyComparison entries={entries} />
 
       <div className="admin-filters">
@@ -251,6 +275,13 @@ export default function VaadiAdmin() {
             Clear Filter
           </button>
         )}
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => downloadCsv(`vaadi-${todayStr()}.csv`, CSV_COLUMNS, filtered)}
+        >
+          Export CSV
+        </button>
       </div>
 
       {loading ? (
