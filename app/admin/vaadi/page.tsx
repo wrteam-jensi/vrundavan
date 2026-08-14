@@ -4,6 +4,8 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { createFarmCropEntry, deleteFarmCropEntry, updateFarmCropEntry, useFarmCropEntries } from '@/lib/farmCrops';
 import { useFarmers } from '@/lib/harvest';
 import type { FarmCropEntry } from '@/lib/types';
+import CropProfitSummary from '@/components/CropProfitSummary';
+import YearlyComparison from '@/components/YearlyComparison';
 import '../admin.css';
 
 function todayStr() {
@@ -161,6 +163,10 @@ export default function VaadiAdmin() {
           )}
         </div>
       </form>
+
+      <CropProfitSummary entries={filtered} />
+
+      <YearlyComparison entries={entries} />
 
       <div className="admin-filters">
         <select value={farmerFilter} onChange={(e) => setFarmerFilter(e.target.value)}>

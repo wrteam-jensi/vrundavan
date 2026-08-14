@@ -1,21 +1,33 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
-import { createFarmer, deleteFarmer, updateFarmer, useFarmers } from '@/lib/harvest';
+import { useMemo, useState, type FormEvent } from 'react';
+import { createFarmer, deleteFarmer, updateFarmer, useFarmers, useHarvestEntries } from '@/lib/harvest';
+import { useFarmCropEntries } from '@/lib/farmCrops';
+import { combinedStatementStats, whatsAppCombinedStatementUrl } from '@/lib/combinedStatement';
 import type { Farmer } from '@/lib/types';
 import '../admin.css';
 
-const EMPTY = { name: '', mobile: '', village: '', farmDetails: '' };
+const EMPTY = { name: '', mobile: '', village: '', farmDetails: '', profitSharePercent: 0 };
 
 export default function FarmersAdmin() {
   const { farmers, loading } = useFarmers();
+  const { entries } = useHarvestEntries();
+  const { entries: cropEntries } = useFarmCropEntries();
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'pending'>('name');
+
+  const pendingByFarmer = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const e of entries) map.set(e.farmerId, (map.get(e.farmerId) ?? 0) + e.pendingAmount);
+    return map;
+  }, [entries]);
 
   const startEdit = (f: Farmer) => {
     setEditingId(f.id);
-    setForm({ name: f.name, mobile: f.mobile, village: f.village, farmDetails: f.farmDetails });
+    setForm({ name: f.name, mobile: f.mobile, village: f.village, farmDetails: f.farmDetails, profitSharePercent: f.profitSharePercent ?? 0 });
   };
 
   const cancelEdit = () => {
@@ -43,6 +55,20 @@ export default function FarmersAdmin() {
     await deleteFarmer(id);
   };
 
+  const visibleFarmers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const filtered = q
+      ? farmers.filter((f) => f.name.toLowerCase().includes(q) || f.village.toLowerCase().includes(q))
+      : farmers;
+    const sorted = [...filtered];
+    if (sortBy === 'pending') {
+      sorted.sort((a, b) => (pendingByFarmer.get(b.id) ?? 0) - (pendingByFarmer.get(a.id) ?? 0));
+    } else {
+      sorted.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return sorted;
+  }, [farmers, search, sortBy, pendingByFarmer]);
+
   return (
     <div>
       <h1 className="admin-page-title">Farmers</h1>
@@ -62,6 +88,12 @@ export default function FarmersAdmin() {
             <input value={form.village} onChange={(e) => setForm({ ...form, village: e.target.value })} required />
           </label>
         </div>
+        <div className="admin-form-row">
+          <label className="admin-field">
+            Vaadi Profit Share (%)
+            <input type="number" min={0} max={100} step="0.01" value={form.profitSharePercent} onChange={(e) => setForm({ ...form, profitSharePercent: Number(e.target.value) })} />
+          </label>
+        </div>
         <label className="admin-field admin-field-wide">
           Farm details
           <textarea value={form.farmDetails} onChange={(e) => setForm({ ...form, farmDetails: e.target.value })} rows={2} />
@@ -78,23 +110,50 @@ export default function FarmersAdmin() {
         </div>
       </form>
 
+      <div className="admin-filters">
+        <input placeholder="Search by name or village…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as 'name' | 'pending')}>
+          <option value="name">Sort: Name</option>
+          <option value="pending">Sort: Pending Amount</option>
+        </select>
+      </div>
+
       {loading ? (
         <p>Loading…</p>
       ) : (
         <div className="admin-list">
-          {farmers.map((f) => (
-            <div key={f.id} className="admin-card">
-              <div className="admin-card-body">
-                <div className="admin-card-title">{f.name} <span className="sub">({f.village})</span></div>
-                <div className="admin-card-meta">{f.mobile}{f.farmDetails ? ` — ${f.farmDetails}` : ''}</div>
+          {visibleFarmers.map((f) => {
+            const pending = pendingByFarmer.get(f.id) ?? 0;
+            return (
+              <div key={f.id} className="admin-card">
+                <div className="admin-card-body">
+                  <div className="admin-card-title">{f.name} <span className="sub">({f.village})</span></div>
+                  <div className="admin-card-meta">{f.mobile}{f.farmDetails ? ` — ${f.farmDetails}` : ''}</div>
+                  <div className="admin-card-meta">
+                    Profit Share: {f.profitSharePercent ?? 0}%
+                    {pending > 0 && (
+                      <>
+                        {' · '}Pending: <strong style={{ color: '#c0392b' }}>₹{Math.round(pending * 100) / 100}</strong>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="admin-card-actions">
+                  <a
+                    href={whatsAppCombinedStatementUrl(f, combinedStatementStats(f, entries, cropEntries))}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-whatsapp btn-sm"
+                  >
+                    Combined Statement
+                  </a>
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(f)}>Edit</button>
+                  <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(f.id)}>Delete</button>
+                </div>
               </div>
-              <div className="admin-card-actions">
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(f)}>Edit</button>
-                <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(f.id)}>Delete</button>
-              </div>
-            </div>
-          ))}
-          {farmers.length === 0 && <div className="admin-empty">No farmers yet. Add one above.</div>}
+            );
+          })}
+          {visibleFarmers.length === 0 && <div className="admin-empty">No farmers found.</div>}
         </div>
       )}
     </div>

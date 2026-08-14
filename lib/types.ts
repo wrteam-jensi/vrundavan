@@ -19,6 +19,7 @@ export interface Farmer {
   mobile: string;
   village: string;
   farmDetails: string;
+  profitSharePercent: number;
 }
 
 export interface HarvestEntry {
