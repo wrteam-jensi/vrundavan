@@ -2,11 +2,17 @@
 
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
 
-type Toast = { id: number; message: string; kind: 'success' | 'error' };
+type Toast = { id: number; message: string; kind: 'success' | 'error'; action?: { label: string; onClick: () => void } };
 type ConfirmState = { message: string; resolve: (ok: boolean) => void } | null;
 
+interface ToastOptions {
+  kind?: 'success' | 'error';
+  action?: { label: string; onClick: () => void };
+  duration?: number;
+}
+
 interface AdminUIContextValue {
-  showToast: (message: string, kind?: 'success' | 'error') => void;
+  showToast: (message: string, kindOrOptions?: 'success' | 'error' | ToastOptions) => void;
   confirm: (message: string) => Promise<boolean>;
 }
 
@@ -17,10 +23,13 @@ export function AdminUIProvider({ children }: { children: ReactNode }) {
   const [confirmState, setConfirmState] = useState<ConfirmState>(null);
   const idRef = useRef(0);
 
-  const showToast = useCallback((message: string, kind: 'success' | 'error' = 'success') => {
+  const showToast = useCallback((message: string, kindOrOptions?: 'success' | 'error' | ToastOptions) => {
+    const opts: ToastOptions = typeof kindOrOptions === 'string' ? { kind: kindOrOptions } : (kindOrOptions ?? {});
+    const kind = opts.kind ?? 'success';
+    const duration = opts.duration ?? (opts.action ? 5000 : 3000);
     const id = ++idRef.current;
-    setToasts((t) => [...t, { id, message, kind }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3000);
+    setToasts((t) => [...t, { id, message, kind, action: opts.action }]);
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), duration);
   }, []);
 
   const confirm = useCallback((message: string) => {
@@ -41,7 +50,19 @@ export function AdminUIProvider({ children }: { children: ReactNode }) {
       <div className="admin-toast-stack">
         {toasts.map((t) => (
           <div key={t.id} className={`admin-toast admin-toast-${t.kind}`}>
-            {t.message}
+            <span>{t.message}</span>
+            {t.action && (
+              <button
+                type="button"
+                className="admin-toast-action"
+                onClick={() => {
+                  t.action!.onClick();
+                  setToasts((prev) => prev.filter((x) => x.id !== t.id));
+                }}
+              >
+                {t.action.label}
+              </button>
+            )}
           </div>
         ))}
       </div>

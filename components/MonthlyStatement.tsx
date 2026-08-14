@@ -16,6 +16,7 @@ function monthLabel(monthStr: string) {
 export default function MonthlyStatement({ farmers, entries }: { farmers: Farmer[]; entries: HarvestEntry[] }) {
   const [farmerId, setFarmerId] = useState('');
   const [month, setMonth] = useState(currentMonthStr());
+  const printId = 'monthly-statement-print';
 
   const farmer = farmers.find((f) => f.id === farmerId);
 
@@ -86,6 +87,44 @@ export default function MonthlyStatement({ farmers, entries }: { farmers: Farmer
             >
               Send Monthly Statement on WhatsApp
             </a>
+            <button type="button" className="btn btn-secondary" onClick={() => window.print()}>
+              🖨️ Print Statement
+            </button>
+          </div>
+
+          <div id={printId} className="admin-print-only">
+            <h2>Vrundavan Farm — Harvesting Statement</h2>
+            <p>Farmer: <strong>{farmer.name}</strong> ({farmer.village})</p>
+            <p>Month: <strong>{monthLabel(month)}</strong></p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Hours</th>
+                  <th>Rate</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {monthEntries.map((entry) => (
+                  <tr key={entry.id}>
+                    <td>{entry.date}</td>
+                    <td>{entry.startTime}–{entry.endTime}</td>
+                    <td>{entry.hours}</td>
+                    <td>₹{entry.ratePerHour}</td>
+                    <td>₹{entry.totalAmount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p style={{ marginTop: 16 }}>
+              Total Entries: {stats.entryCount} &nbsp;|&nbsp;
+              Total Hours: {stats.totalHours} &nbsp;|&nbsp;
+              Total Amount: ₹{stats.totalAmount} &nbsp;|&nbsp;
+              Paid: ₹{stats.totalPaid} &nbsp;|&nbsp;
+              Pending: ₹{stats.totalPending}
+            </p>
           </div>
         </>
       )}

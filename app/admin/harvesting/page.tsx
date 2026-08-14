@@ -150,10 +150,19 @@ export default function HarvestingAdmin() {
     }
   };
 
-  const onDelete = async (id: string) => {
-    if (!(await confirm('Delete this harvesting entry? This cannot be undone.'))) return;
+  const onDelete = async (entry: HarvestEntry) => {
+    if (!(await confirm(`Delete ${entry.farmerName}'s entry from ${entry.date}?`))) return;
+    const { id, ...data } = entry;
     await deleteHarvestEntry(id);
-    showToast('Entry deleted.');
+    showToast('Entry deleted.', {
+      action: {
+        label: 'Undo',
+        onClick: async () => {
+          await createHarvestEntry(data);
+          showToast('Entry restored.');
+        },
+      },
+    });
   };
 
   const toggleSelect = (id: string) => {
@@ -413,7 +422,7 @@ export default function HarvestingAdmin() {
                   Send WhatsApp
                 </a>
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(entry)}>Edit</button>
-                <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(entry.id)}>Delete</button>
+                <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(entry)}>Delete</button>
               </div>
             </div>
           ))}

@@ -10,6 +10,7 @@ import { AdminUIProvider } from '@/components/AdminUI';
 import './admin.css';
 
 const NAV_LINKS = [
+  { href: '/admin/dashboard', label: 'Dashboard', icon: '🏠' },
   { href: '/admin/harvesting', label: 'Harvesting', icon: '🌾' },
   { href: '/admin/farmers', label: 'Farmers', icon: '👨‍🌾' },
   { href: '/admin/vaadi', label: 'My Farm', icon: '📊' },
@@ -27,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (loading) return;
     if (!user && !isLoginPage) router.replace('/admin/login');
-    if (user && isLoginPage) router.replace('/admin/harvesting');
+    if (user && isLoginPage) router.replace('/admin/dashboard');
   }, [user, loading, isLoginPage, router]);
 
   useEffect(() => {

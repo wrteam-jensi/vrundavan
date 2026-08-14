@@ -60,6 +60,8 @@ export default function VaadiAdmin() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [cropFilter, setCropFilter] = useState('');
+  const [yearFilter, setYearFilter] = useState('');
+  const [collapsedYears, setCollapsedYears] = useState<Set<string>>(new Set());
   const [existingReceipt, setExistingReceipt] = useState<{ url: string; path: string } | null>(null);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -151,15 +153,54 @@ export default function VaadiAdmin() {
   };
 
   const onDelete = async (entry: FarmCropEntry) => {
-    if (!(await confirm('Delete this entry? This cannot be undone.'))) return;
-    await deleteFarmCropEntry(entry.id);
-    if (entry.receiptPath) await deleteImage(entry.receiptPath);
-    showToast('Entry deleted.');
+    if (!(await confirm(`Delete this ${entry.cropName} entry?`))) return;
+    const { id, ...data } = entry;
+    await deleteFarmCropEntry(id);
+    let restored = false;
+    showToast('Entry deleted.', {
+      action: {
+        label: 'Undo',
+        onClick: async () => {
+          restored = true;
+          await createFarmCropEntry(data);
+          showToast('Entry restored.');
+        },
+      },
+    });
+    setTimeout(() => {
+      if (!restored && entry.receiptPath) deleteImage(entry.receiptPath);
+    }, 5500);
   };
 
-  const filtered = entries.filter((e) => !cropFilter || e.cropName === cropFilter);
+  const filtered = entries.filter(
+    (e) => (!cropFilter || e.cropName === cropFilter) && (!yearFilter || e.saleDate.startsWith(yearFilter))
+  );
 
   const cropNames = useMemo(() => Array.from(new Set(entries.map((e) => e.cropName))).sort(), [entries]);
+  const years = useMemo(
+    () => Array.from(new Set(entries.map((e) => e.saleDate.slice(0, 4)))).sort((a, b) => Number(b) - Number(a)),
+    [entries]
+  );
+
+  const groupedByYear = useMemo(() => {
+    const map = new Map<string, FarmCropEntry[]>();
+    for (const e of filtered) {
+      const year = e.saleDate.slice(0, 4);
+      const arr = map.get(year) ?? [];
+      arr.push(e);
+      map.set(year, arr);
+    }
+    return Array.from(map.entries()).sort((a, b) => Number(b[0]) - Number(a[0]));
+  }, [filtered]);
+
+  const toggleYear = (year: string) => {
+    setCollapsedYears((prev) => {
+      const next = new Set(prev);
+      if (next.has(year)) next.delete(year);
+      else next.add(year);
+      return next;
+    });
+  };
 
   const summary = useMemo(() => {
     const totalCost = filtered.reduce((s, e) => s + e.cost, 0);
@@ -298,8 +339,14 @@ export default function VaadiAdmin() {
             <option key={c} value={c}>{c}</option>
           ))}
         </select>
-        {cropFilter && (
-          <button type="button" className="btn btn-secondary" onClick={() => setCropFilter('')}>
+        <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)}>
+          <option value="">All Years</option>
+          {years.map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+        {(cropFilter || yearFilter) && (
+          <button type="button" className="btn btn-secondary" onClick={() => { setCropFilter(''); setYearFilter(''); }}>
             Clear Filter
           </button>
         )}
@@ -315,36 +362,78 @@ export default function VaadiAdmin() {
       {loading ? (
         <SkeletonList rows={3} />
       ) : (
-        <div className="admin-list">
-          {filtered.map((entry) => (
-            <div key={entry.id} className="admin-card">
-              <div className="admin-card-body">
-                <div className="admin-card-title">
-                  {entry.cropName} <span className="sub">{entry.saleDate}</span>
-                </div>
-                <div className="admin-card-meta">
-                  Seed: {entry.seedQty} {entry.seedUnit} · Yield: {entry.yieldQty} {entry.yieldUnit} · Price ₹{entry.pricePerUnit}/unit
-                </div>
-                <div className="admin-card-meta">
-                  Cost — Seed ₹{entry.costSeed} · Khatar ₹{entry.costFertilizer} · Dava ₹{entry.costPesticide} · Majoor ₹{entry.costLabor} · Fuel ₹{entry.costFuel} · Other ₹{entry.costOther}
-                </div>
-                <div className="admin-card-meta">
-                  Total Cost ₹{entry.cost} · Revenue ₹{entry.revenue} · Profit{' '}
-                  <strong style={{ color: entry.profit >= 0 ? '#2e5339' : '#c0392b' }}>₹{entry.profit}</strong>
-                </div>
-                {entry.note && <div className="admin-card-meta">{entry.note}</div>}
+        <div style={{ display: 'grid', gap: 16 }}>
+          {groupedByYear.map(([year, yearEntries]) => {
+            const collapsed = collapsedYears.has(year);
+            const yearTotals = {
+              cost: Math.round(yearEntries.reduce((s, e) => s + e.cost, 0) * 100) / 100,
+              revenue: Math.round(yearEntries.reduce((s, e) => s + e.revenue, 0) * 100) / 100,
+              profit: Math.round(yearEntries.reduce((s, e) => s + e.profit, 0) * 100) / 100,
+            };
+            return (
+              <div key={year}>
+                <button
+                  type="button"
+                  onClick={() => toggleYear(year)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    background: '#eef0ea',
+                    border: 'none',
+                    borderRadius: 10,
+                    padding: '10px 14px',
+                    marginBottom: 8,
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: '#1a1a1a',
+                  }}
+                >
+                  <span>{collapsed ? '▸' : '▾'} {year} <span style={{ fontWeight: 400, color: '#888' }}>({yearEntries.length} {yearEntries.length === 1 ? 'entry' : 'entries'})</span></span>
+                  <span style={{ fontSize: 12, fontWeight: 600 }}>
+                    Cost ₹{yearTotals.cost} · Revenue ₹{yearTotals.revenue} · Profit{' '}
+                    <span style={{ color: yearTotals.profit >= 0 ? '#2e5339' : '#c0392b' }}>₹{yearTotals.profit}</span>
+                  </span>
+                </button>
+
+                {!collapsed && (
+                  <div className="admin-list">
+                    {yearEntries.map((entry) => (
+                      <div key={entry.id} className="admin-card">
+                        <div className="admin-card-body">
+                          <div className="admin-card-title">
+                            {entry.cropName} <span className="sub">{entry.saleDate}</span>
+                          </div>
+                          <div className="admin-card-meta">
+                            Seed: {entry.seedQty} {entry.seedUnit} · Yield: {entry.yieldQty} {entry.yieldUnit} · Price ₹{entry.pricePerUnit}/unit
+                          </div>
+                          <div className="admin-card-meta">
+                            Cost — Seed ₹{entry.costSeed} · Khatar ₹{entry.costFertilizer} · Dava ₹{entry.costPesticide} · Majoor ₹{entry.costLabor} · Fuel ₹{entry.costFuel} · Other ₹{entry.costOther}
+                          </div>
+                          <div className="admin-card-meta">
+                            Total Cost ₹{entry.cost} · Revenue ₹{entry.revenue} · Profit{' '}
+                            <strong style={{ color: entry.profit >= 0 ? '#2e5339' : '#c0392b' }}>₹{entry.profit}</strong>
+                          </div>
+                          {entry.note && <div className="admin-card-meta">{entry.note}</div>}
+                        </div>
+                        {entry.receiptUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={entry.receiptUrl} alt="Receipt" className="admin-card-thumb" style={{ cursor: 'pointer' }} onClick={() => window.open(entry.receiptUrl!, '_blank')} />
+                        )}
+                        <div className="admin-card-actions">
+                          <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(entry)}>Edit</button>
+                          <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(entry)}>Delete</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              {entry.receiptUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={entry.receiptUrl} alt="Receipt" className="admin-card-thumb" style={{ cursor: 'pointer' }} onClick={() => window.open(entry.receiptUrl!, '_blank')} />
-              )}
-              <div className="admin-card-actions">
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(entry)}>Edit</button>
-                <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(entry)}>Delete</button>
-              </div>
-            </div>
-          ))}
-          {filtered.length === 0 && <div className="admin-empty">No entries found.</div>}
+            );
+          })}
+          {groupedByYear.length === 0 && <div className="admin-empty">No entries found.</div>}
         </div>
       )}
     </div>

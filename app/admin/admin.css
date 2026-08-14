@@ -3,6 +3,48 @@
   background: #f4f4f0;
 }
 
+.admin-print-only {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .admin-print-only,
+  .admin-print-only * {
+    visibility: visible;
+  }
+
+  .admin-print-only {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 24px;
+  }
+
+  .admin-print-only table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+
+  .admin-print-only th,
+  .admin-print-only td {
+    border: 1px solid #999;
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 13px;
+  }
+
+  .admin-print-only th {
+    background: #eee;
+  }
+}
+
 .admin-offline-banner {
   position: sticky;
   top: 0;
@@ -594,7 +636,10 @@ input:focus, select:focus, textarea:focus {
 }
 
 .admin-toast {
-  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 10px 18px;
   border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
@@ -602,6 +647,24 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   animation: admin-toast-in 0.2s ease;
   text-align: center;
+  pointer-events: auto;
+}
+
+.admin-toast-action {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #1a1a1a;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.admin-toast-action:hover {
+  background: #fff;
 }
 
 @keyframes admin-toast-in {

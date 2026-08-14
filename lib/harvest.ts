@@ -107,3 +107,11 @@ export function whatsAppStatementUrl(farmer: Farmer, monthLabel: string, stats: 
   const message = `Namaste ${farmer.name},\n${monthLabel} mahina nu harvesting summary:\n\nKul Entries: ${stats.entryCount}\nKul Kalak: ${stats.totalHours}\nKul Charge: ₹${stats.totalAmount}\nPaid: ₹${stats.totalPaid}\nPending: ₹${stats.totalPending}\n\nThank you.`;
   return `https://wa.me/${normalizePhone(farmer.mobile)}?text=${encodeURIComponent(message)}`;
 }
+
+export function whatsAppPendingUrl(farmer: Farmer, entries: HarvestEntry[]) {
+  const pendingEntries = entries.filter((e) => e.farmerId === farmer.id && e.pendingAmount > 0);
+  const totalPending = Math.round(pendingEntries.reduce((s, e) => s + e.pendingAmount, 0) * 100) / 100;
+  const lines = pendingEntries.map((e) => `${e.date}: ${e.hours}h — ₹${e.pendingAmount}`).join('\n');
+  const message = `Namaste ${farmer.name},\nTamaru pending payment:\n\n${lines}\n\nKul Pending: ₹${totalPending}\n\nThank you.`;
+  return `https://wa.me/${normalizePhone(farmer.mobile)}?text=${encodeURIComponent(message)}`;
+}

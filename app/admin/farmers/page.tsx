@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { createFarmer, deleteFarmer, updateFarmer, useFarmers, useHarvestEntries } from '@/lib/harvest';
+import { createFarmer, deleteFarmer, updateFarmer, useFarmers, useHarvestEntries, whatsAppPendingUrl } from '@/lib/harvest';
 import type { Farmer } from '@/lib/types';
 import SkeletonList from '@/components/SkeletonList';
 import { useAdminUI } from '@/components/AdminUI';
@@ -54,10 +54,19 @@ export default function FarmersAdmin() {
     }
   };
 
-  const onDelete = async (id: string) => {
-    if (!(await confirm('Delete this farmer? Their harvesting history will remain but no longer link to a farmer record.'))) return;
+  const onDelete = async (farmer: Farmer) => {
+    if (!(await confirm(`Delete ${farmer.name}? Their harvesting history will remain but no longer link to a farmer record.`))) return;
+    const { id, ...data } = farmer;
     await deleteFarmer(id);
-    showToast('Farmer deleted.');
+    showToast('Farmer deleted.', {
+      action: {
+        label: 'Undo',
+        onClick: async () => {
+          await createFarmer(data);
+          showToast('Farmer restored.');
+        },
+      },
+    });
   };
 
   const visibleFarmers = useMemo(() => {
@@ -137,9 +146,14 @@ export default function FarmersAdmin() {
                   )}
                 </div>
                 <div className="admin-card-actions">
+                  {pending > 0 && (
+                    <a href={whatsAppPendingUrl(f, entries)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
+                      Send Pending
+                    </a>
+                  )}
                   <a href={`/admin/farmers/${f.id}`} className="btn btn-secondary btn-sm">View</a>
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(f)}>Edit</button>
-                  <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(f.id)}>Delete</button>
+                  <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(f)}>Delete</button>
                 </div>
               </div>
             );
