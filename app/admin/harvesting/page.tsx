@@ -38,6 +38,7 @@ export default function HarvestingAdmin() {
   const [busy, setBusy] = useState(false);
   const [farmerFilter, setFarmerFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+  const [pendingOnly, setPendingOnly] = useState(false);
   const [rateInput, setRateInput] = useState('');
   const [rateBusy, setRateBusy] = useState(false);
   const [rateEditing, setRateEditing] = useState(false);
@@ -122,7 +123,10 @@ export default function HarvestingAdmin() {
   };
 
   const filtered = entries.filter(
-    (e) => (!farmerFilter || e.farmerId === farmerFilter) && (!dateFilter || e.date === dateFilter)
+    (e) =>
+      (!farmerFilter || e.farmerId === farmerFilter) &&
+      (!dateFilter || e.date === dateFilter) &&
+      (!pendingOnly || e.pendingAmount > 0)
   );
 
   const summary = useMemo(() => {
@@ -258,8 +262,15 @@ export default function HarvestingAdmin() {
           ))}
         </select>
         <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
-        {(farmerFilter || dateFilter) && (
-          <button type="button" className="btn btn-secondary" onClick={() => { setFarmerFilter(''); setDateFilter(''); }}>
+        <button
+          type="button"
+          className={`btn btn-sm ${pendingOnly ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setPendingOnly((p) => !p)}
+        >
+          Pending Payment Only
+        </button>
+        {(farmerFilter || dateFilter || pendingOnly) && (
+          <button type="button" className="btn btn-secondary" onClick={() => { setFarmerFilter(''); setDateFilter(''); setPendingOnly(false); }}>
             Clear Filters
           </button>
         )}
