@@ -2,20 +2,17 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { createFarmer, deleteFarmer, updateFarmer, useFarmers, useHarvestEntries } from '@/lib/harvest';
-import { useFarmCropEntries } from '@/lib/farmCrops';
-import { combinedStatementStats, whatsAppCombinedStatementUrl } from '@/lib/combinedStatement';
 import type { Farmer } from '@/lib/types';
 import SkeletonList from '@/components/SkeletonList';
 import { useAdminUI } from '@/components/AdminUI';
 import '../admin.css';
 
-const EMPTY = { name: '', mobile: '', village: '', farmDetails: '', profitSharePercent: 0 };
+const EMPTY = { name: '', mobile: '', village: '', farmDetails: '' };
 
 export default function FarmersAdmin() {
   const { showToast, confirm } = useAdminUI();
   const { farmers, loading } = useFarmers();
   const { entries } = useHarvestEntries();
-  const { entries: cropEntries } = useFarmCropEntries();
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -30,7 +27,7 @@ export default function FarmersAdmin() {
 
   const startEdit = (f: Farmer) => {
     setEditingId(f.id);
-    setForm({ name: f.name, mobile: f.mobile, village: f.village, farmDetails: f.farmDetails, profitSharePercent: f.profitSharePercent ?? 0 });
+    setForm({ name: f.name, mobile: f.mobile, village: f.village, farmDetails: f.farmDetails });
   };
 
   const cancelEdit = () => {
@@ -96,12 +93,6 @@ export default function FarmersAdmin() {
             <input value={form.village} onChange={(e) => setForm({ ...form, village: e.target.value })} required />
           </label>
         </div>
-        <div className="admin-form-row">
-          <label className="admin-field">
-            Vaadi Profit Share (%)
-            <input type="number" min={0} max={100} step="0.01" value={form.profitSharePercent} onChange={(e) => setForm({ ...form, profitSharePercent: Number(e.target.value) })} />
-          </label>
-        </div>
         <label className="admin-field admin-field-wide">
           Farm details
           <textarea value={form.farmDetails} onChange={(e) => setForm({ ...form, farmDetails: e.target.value })} rows={2} />
@@ -137,24 +128,13 @@ export default function FarmersAdmin() {
                 <div className="admin-card-body">
                   <div className="admin-card-title">{f.name} <span className="sub">({f.village})</span></div>
                   <div className="admin-card-meta">{f.mobile}{f.farmDetails ? ` — ${f.farmDetails}` : ''}</div>
-                  <div className="admin-card-meta">
-                    Profit Share: {f.profitSharePercent ?? 0}%
-                    {pending > 0 && (
-                      <>
-                        {' · '}Pending: <strong style={{ color: '#c0392b' }}>₹{Math.round(pending * 100) / 100}</strong>
-                      </>
-                    )}
-                  </div>
+                  {pending > 0 && (
+                    <div className="admin-card-meta">
+                      Pending: <strong style={{ color: '#c0392b' }}>₹{Math.round(pending * 100) / 100}</strong>
+                    </div>
+                  )}
                 </div>
                 <div className="admin-card-actions">
-                  <a
-                    href={whatsAppCombinedStatementUrl(f, combinedStatementStats(f, entries, cropEntries))}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-whatsapp btn-sm"
-                  >
-                    Combined Statement
-                  </a>
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(f)}>Edit</button>
                   <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(f.id)}>Delete</button>
                 </div>

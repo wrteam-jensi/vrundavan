@@ -13,7 +13,7 @@ export default function YearlyComparison({ entries }: { entries: FarmCropEntry[]
   const rows = useMemo(() => {
     const map = new Map<string, { cropName: string; thisYearProfit: number; lastYearProfit: number }>();
     for (const e of entries) {
-      const year = Number(e.date.slice(0, 4));
+      const year = Number(e.saleDate.slice(0, 4));
       if (year !== thisYear && year !== lastYear) continue;
       const row = map.get(e.cropName) ?? { cropName: e.cropName, thisYearProfit: 0, lastYearProfit: 0 };
       if (year === thisYear) row.thisYearProfit += e.profit;

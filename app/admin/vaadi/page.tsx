@@ -2,7 +2,6 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { createFarmCropEntry, deleteFarmCropEntry, updateFarmCropEntry, useFarmCropEntries } from '@/lib/farmCrops';
-import { useFarmers } from '@/lib/harvest';
 import type { FarmCropEntry } from '@/lib/types';
 import CropProfitSummary from '@/components/CropProfitSummary';
 import YearlyComparison from '@/components/YearlyComparison';
@@ -15,34 +14,39 @@ function todayStr() {
 }
 
 const EMPTY = {
-  farmerId: '',
   cropName: '',
-  date: todayStr(),
+  seedQty: 0,
+  seedUnit: 'kg',
   cost: 0,
-  revenue: 0,
+  yieldQty: 0,
+  yieldUnit: 'kg',
+  saleDate: todayStr(),
+  pricePerUnit: 0,
   note: '',
 };
 
 export default function VaadiAdmin() {
   const { showToast, confirm } = useAdminUI();
-  const { farmers } = useFarmers();
   const { entries, loading } = useFarmCropEntries();
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [farmerFilter, setFarmerFilter] = useState('');
   const [cropFilter, setCropFilter] = useState('');
 
-  const profit = Math.round((form.revenue - form.cost) * 100) / 100;
+  const revenue = Math.round(form.yieldQty * form.pricePerUnit * 100) / 100;
+  const profit = Math.round((revenue - form.cost) * 100) / 100;
 
   const startEdit = (entry: FarmCropEntry) => {
     setEditingId(entry.id);
     setForm({
-      farmerId: entry.farmerId,
       cropName: entry.cropName,
-      date: entry.date,
+      seedQty: entry.seedQty,
+      seedUnit: entry.seedUnit,
       cost: entry.cost,
-      revenue: entry.revenue,
+      yieldQty: entry.yieldQty,
+      yieldUnit: entry.yieldUnit,
+      saleDate: entry.saleDate,
+      pricePerUnit: entry.pricePerUnit,
       note: entry.note,
     });
   };
@@ -54,17 +58,18 @@ export default function VaadiAdmin() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const farmer = farmers.find((f) => f.id === form.farmerId);
-    if (!farmer) return;
     setBusy(true);
     try {
       const data = {
-        farmerId: farmer.id,
-        farmerName: farmer.name,
         cropName: form.cropName,
-        date: form.date,
+        seedQty: form.seedQty,
+        seedUnit: form.seedUnit,
         cost: form.cost,
-        revenue: form.revenue,
+        yieldQty: form.yieldQty,
+        yieldUnit: form.yieldUnit,
+        saleDate: form.saleDate,
+        pricePerUnit: form.pricePerUnit,
+        revenue,
         profit,
         note: form.note,
         createdAt: editingId ? (entries.find((e) => e.id === editingId)?.createdAt ?? Date.now()) : Date.now(),
@@ -90,9 +95,7 @@ export default function VaadiAdmin() {
     showToast('Entry deleted.');
   };
 
-  const filtered = entries.filter(
-    (e) => (!farmerFilter || e.farmerId === farmerFilter) && (!cropFilter || e.cropName === cropFilter)
-  );
+  const filtered = entries.filter((e) => !cropFilter || e.cropName === cropFilter);
 
   const cropNames = useMemo(() => Array.from(new Set(entries.map((e) => e.cropName))).sort(), [entries]);
 
@@ -129,34 +132,48 @@ export default function VaadiAdmin() {
 
       <form onSubmit={onSubmit} className="admin-form">
         <div className="admin-form-row">
-          <select value={form.farmerId} onChange={(e) => setForm({ ...form, farmerId: e.target.value })} required>
-            <option value="">Select Farmer</option>
-            {farmers.map((f) => (
-              <option key={f.id} value={f.id}>{f.name} ({f.village})</option>
-            ))}
-          </select>
           <label className="admin-field">
             Crop (Pak)
             <input value={form.cropName} onChange={(e) => setForm({ ...form, cropName: e.target.value })} required placeholder="e.g. Wheat, Cotton" />
           </label>
-          <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />
-        </div>
-        <div className="admin-form-row">
+          <label className="admin-field">
+            Seed Qty
+            <input type="number" min={0} step="0.01" value={form.seedQty} onChange={(e) => setForm({ ...form, seedQty: Number(e.target.value) })} />
+          </label>
+          <label className="admin-field">
+            Seed Unit
+            <input value={form.seedUnit} onChange={(e) => setForm({ ...form, seedUnit: e.target.value })} placeholder="kg / bag / mann" />
+          </label>
           <label className="admin-field">
             Cost (₹)
             <input type="number" min={0} step="0.01" value={form.cost} onChange={(e) => setForm({ ...form, cost: Number(e.target.value) })} required />
           </label>
+        </div>
+        <div className="admin-form-row">
           <label className="admin-field">
-            Revenue (₹)
-            <input type="number" min={0} step="0.01" value={form.revenue} onChange={(e) => setForm({ ...form, revenue: Number(e.target.value) })} required />
+            Yield Qty (pak thayu)
+            <input type="number" min={0} step="0.01" value={form.yieldQty} onChange={(e) => setForm({ ...form, yieldQty: Number(e.target.value) })} />
           </label>
           <label className="admin-field">
-            Note (optional)
-            <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
+            Yield Unit
+            <input value={form.yieldUnit} onChange={(e) => setForm({ ...form, yieldUnit: e.target.value })} placeholder="kg / quintal / mann" />
+          </label>
+          <label className="admin-field">
+            Sale Date
+            <input type="date" value={form.saleDate} onChange={(e) => setForm({ ...form, saleDate: e.target.value })} required />
+          </label>
+          <label className="admin-field">
+            Price / Unit (₹)
+            <input type="number" min={0} step="0.01" value={form.pricePerUnit} onChange={(e) => setForm({ ...form, pricePerUnit: Number(e.target.value) })} />
           </label>
         </div>
+        <label className="admin-field admin-field-wide">
+          Note (optional)
+          <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
+        </label>
 
         <div className="admin-form-summary">
+          <span>Revenue: <strong>₹{revenue}</strong></span>
           <span className={profit >= 0 ? 'pending-ok' : 'pending-due'}>Profit: <strong>₹{profit}</strong></span>
         </div>
 
@@ -177,21 +194,15 @@ export default function VaadiAdmin() {
       <YearlyComparison entries={entries} />
 
       <div className="admin-filters">
-        <select value={farmerFilter} onChange={(e) => setFarmerFilter(e.target.value)}>
-          <option value="">All Farmers</option>
-          {farmers.map((f) => (
-            <option key={f.id} value={f.id}>{f.name}</option>
-          ))}
-        </select>
         <select value={cropFilter} onChange={(e) => setCropFilter(e.target.value)}>
           <option value="">All Crops</option>
           {cropNames.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
         </select>
-        {(farmerFilter || cropFilter) && (
-          <button type="button" className="btn btn-secondary" onClick={() => { setFarmerFilter(''); setCropFilter(''); }}>
-            Clear Filters
+        {cropFilter && (
+          <button type="button" className="btn btn-secondary" onClick={() => setCropFilter('')}>
+            Clear Filter
           </button>
         )}
       </div>
@@ -204,7 +215,10 @@ export default function VaadiAdmin() {
             <div key={entry.id} className="admin-card">
               <div className="admin-card-body">
                 <div className="admin-card-title">
-                  {entry.farmerName} <span className="sub">{entry.cropName} · {entry.date}</span>
+                  {entry.cropName} <span className="sub">{entry.saleDate}</span>
+                </div>
+                <div className="admin-card-meta">
+                  Seed: {entry.seedQty} {entry.seedUnit} · Yield: {entry.yieldQty} {entry.yieldUnit} · Price ₹{entry.pricePerUnit}/unit
                 </div>
                 <div className="admin-card-meta">
                   Cost ₹{entry.cost} · Revenue ₹{entry.revenue} · Profit{' '}

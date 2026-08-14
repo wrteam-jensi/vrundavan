@@ -19,7 +19,6 @@ export interface Farmer {
   mobile: string;
   village: string;
   farmDetails: string;
-  profitSharePercent: number;
 }
 
 export interface HarvestEntry {
@@ -42,11 +41,14 @@ export interface HarvestEntry {
 
 export interface FarmCropEntry {
   id: string;
-  farmerId: string;
-  farmerName: string;
   cropName: string;
-  date: string; // YYYY-MM-DD
+  seedQty: number;
+  seedUnit: string;
   cost: number;
+  yieldQty: number;
+  yieldUnit: string;
+  saleDate: string; // YYYY-MM-DD
+  pricePerUnit: number;
   revenue: number;
   profit: number;
   note: string;
