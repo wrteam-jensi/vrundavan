@@ -137,27 +137,27 @@ export default function VaadiAdmin() {
             <input value={form.cropName} onChange={(e) => setForm({ ...form, cropName: e.target.value })} required placeholder="e.g. Wheat, Cotton" />
           </label>
           <label className="admin-field">
-            Seed Qty
-            <input type="number" min={0} step="0.01" value={form.seedQty} onChange={(e) => setForm({ ...form, seedQty: Number(e.target.value) })} />
-          </label>
-          <label className="admin-field">
-            Seed Unit
-            <input value={form.seedUnit} onChange={(e) => setForm({ ...form, seedUnit: e.target.value })} placeholder="kg / bag / mann" />
-          </label>
-          <label className="admin-field">
             Cost (₹)
             <input type="number" min={0} step="0.01" value={form.cost} onChange={(e) => setForm({ ...form, cost: Number(e.target.value) })} required />
           </label>
         </div>
         <div className="admin-form-row">
           <label className="admin-field">
-            Yield Qty (pak thayu)
-            <input type="number" min={0} step="0.01" value={form.yieldQty} onChange={(e) => setForm({ ...form, yieldQty: Number(e.target.value) })} />
+            Seed Qty
+            <div className="admin-field-pair">
+              <input type="number" min={0} step="0.01" value={form.seedQty} onChange={(e) => setForm({ ...form, seedQty: Number(e.target.value) })} />
+              <input value={form.seedUnit} onChange={(e) => setForm({ ...form, seedUnit: e.target.value })} placeholder="kg" />
+            </div>
           </label>
           <label className="admin-field">
-            Yield Unit
-            <input value={form.yieldUnit} onChange={(e) => setForm({ ...form, yieldUnit: e.target.value })} placeholder="kg / quintal / mann" />
+            Yield Qty (pak thayu)
+            <div className="admin-field-pair">
+              <input type="number" min={0} step="0.01" value={form.yieldQty} onChange={(e) => setForm({ ...form, yieldQty: Number(e.target.value) })} />
+              <input value={form.yieldUnit} onChange={(e) => setForm({ ...form, yieldUnit: e.target.value })} placeholder="kg" />
+            </div>
           </label>
+        </div>
+        <div className="admin-form-row">
           <label className="admin-field">
             Sale Date
             <input type="date" value={form.saleDate} onChange={(e) => setForm({ ...form, saleDate: e.target.value })} required />

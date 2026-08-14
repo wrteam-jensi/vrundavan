@@ -166,6 +166,12 @@
   grid-column: 1 / -1;
 }
 
+.admin-field-pair {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 6px;
+}
+
 input, select, textarea {
   width: 100%;
   padding: 9px 11px;
@@ -470,6 +476,18 @@ input:focus, select:focus, textarea:focus {
 
   .admin-main {
     padding: 14px;
+  }
+
+  .admin-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-field-pair {
+    grid-template-columns: 1.4fr 1fr;
+  }
+
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .admin-card {
