@@ -4,7 +4,7 @@ function escapeCsvCell(value: unknown) {
   return str;
 }
 
-export function downloadCsv(filename: string, columns: { key: string; label: string }[], rows: Record<string, unknown>[]) {
+export function downloadCsv<T extends object>(filename: string, columns: { key: keyof T; label: string }[], rows: T[]) {
   const header = columns.map((c) => escapeCsvCell(c.label)).join(',');
   const lines = rows.map((row) => columns.map((c) => escapeCsvCell(row[c.key])).join(','));
   const csv = [header, ...lines].join('\r\n');

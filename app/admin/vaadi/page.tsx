@@ -15,7 +15,7 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
-const CSV_COLUMNS = [
+const CSV_COLUMNS: { key: keyof FarmCropEntry; label: string }[] = [
   { key: 'saleDate', label: 'Sale Date' },
   { key: 'cropName', label: 'Crop' },
   { key: 'seedQty', label: 'Seed Qty' },

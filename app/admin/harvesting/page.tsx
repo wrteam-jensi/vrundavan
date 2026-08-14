@@ -18,7 +18,7 @@ import SkeletonList from '@/components/SkeletonList';
 import { useAdminUI } from '@/components/AdminUI';
 import '../admin.css';
 
-const CSV_COLUMNS = [
+const CSV_COLUMNS: { key: keyof HarvestEntry; label: string }[] = [
   { key: 'date', label: 'Date' },
   { key: 'farmerName', label: 'Farmer' },
   { key: 'startTime', label: 'Start Time' },
