@@ -44,7 +44,13 @@ export interface FarmCropEntry {
   cropName: string;
   seedQty: number;
   seedUnit: string;
-  cost: number;
+  costSeed: number;
+  costFertilizer: number;
+  costPesticide: number;
+  costLabor: number;
+  costFuel: number;
+  costOther: number;
+  cost: number; // sum of all cost fields above
   yieldQty: number;
   yieldUnit: string;
   saleDate: string; // YYYY-MM-DD

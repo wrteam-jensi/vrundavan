@@ -17,7 +17,12 @@ const EMPTY = {
   cropName: '',
   seedQty: 0,
   seedUnit: 'kg',
-  cost: 0,
+  costSeed: 0,
+  costFertilizer: 0,
+  costPesticide: 0,
+  costLabor: 0,
+  costFuel: 0,
+  costOther: 0,
   yieldQty: 0,
   yieldUnit: 'kg',
   saleDate: todayStr(),
@@ -33,8 +38,10 @@ export default function VaadiAdmin() {
   const [busy, setBusy] = useState(false);
   const [cropFilter, setCropFilter] = useState('');
 
+  const totalCost =
+    Math.round((form.costSeed + form.costFertilizer + form.costPesticide + form.costLabor + form.costFuel + form.costOther) * 100) / 100;
   const revenue = Math.round(form.yieldQty * form.pricePerUnit * 100) / 100;
-  const profit = Math.round((revenue - form.cost) * 100) / 100;
+  const profit = Math.round((revenue - totalCost) * 100) / 100;
 
   const startEdit = (entry: FarmCropEntry) => {
     setEditingId(entry.id);
@@ -42,7 +49,12 @@ export default function VaadiAdmin() {
       cropName: entry.cropName,
       seedQty: entry.seedQty,
       seedUnit: entry.seedUnit,
-      cost: entry.cost,
+      costSeed: entry.costSeed,
+      costFertilizer: entry.costFertilizer,
+      costPesticide: entry.costPesticide,
+      costLabor: entry.costLabor,
+      costFuel: entry.costFuel,
+      costOther: entry.costOther,
       yieldQty: entry.yieldQty,
       yieldUnit: entry.yieldUnit,
       saleDate: entry.saleDate,
@@ -64,7 +76,13 @@ export default function VaadiAdmin() {
         cropName: form.cropName,
         seedQty: form.seedQty,
         seedUnit: form.seedUnit,
-        cost: form.cost,
+        costSeed: form.costSeed,
+        costFertilizer: form.costFertilizer,
+        costPesticide: form.costPesticide,
+        costLabor: form.costLabor,
+        costFuel: form.costFuel,
+        costOther: form.costOther,
+        cost: totalCost,
         yieldQty: form.yieldQty,
         yieldUnit: form.yieldUnit,
         saleDate: form.saleDate,
@@ -137,18 +155,45 @@ export default function VaadiAdmin() {
             <input value={form.cropName} onChange={(e) => setForm({ ...form, cropName: e.target.value })} required placeholder="e.g. Wheat, Cotton" />
           </label>
           <label className="admin-field">
-            Cost (₹)
-            <input type="number" min={0} step="0.01" value={form.cost} onChange={(e) => setForm({ ...form, cost: Number(e.target.value) })} required />
-          </label>
-        </div>
-        <div className="admin-form-row">
-          <label className="admin-field">
             Seed Qty
             <div className="admin-field-pair">
               <input type="number" min={0} step="0.01" value={form.seedQty} onChange={(e) => setForm({ ...form, seedQty: Number(e.target.value) })} />
               <input value={form.seedUnit} onChange={(e) => setForm({ ...form, seedUnit: e.target.value })} placeholder="kg" />
             </div>
           </label>
+        </div>
+
+        <div className="admin-cost-breakdown-label">Cost Breakdown (₹)</div>
+        <div className="admin-form-row">
+          <label className="admin-field">
+            Seed (Beej)
+            <input type="number" min={0} step="0.01" value={form.costSeed} onChange={(e) => setForm({ ...form, costSeed: Number(e.target.value) })} />
+          </label>
+          <label className="admin-field">
+            Fertilizer (Khatar)
+            <input type="number" min={0} step="0.01" value={form.costFertilizer} onChange={(e) => setForm({ ...form, costFertilizer: Number(e.target.value) })} />
+          </label>
+          <label className="admin-field">
+            Pesticide (Dava)
+            <input type="number" min={0} step="0.01" value={form.costPesticide} onChange={(e) => setForm({ ...form, costPesticide: Number(e.target.value) })} />
+          </label>
+        </div>
+        <div className="admin-form-row">
+          <label className="admin-field">
+            Labor (Majoor)
+            <input type="number" min={0} step="0.01" value={form.costLabor} onChange={(e) => setForm({ ...form, costLabor: Number(e.target.value) })} />
+          </label>
+          <label className="admin-field">
+            Fuel (Petrol/Diesel)
+            <input type="number" min={0} step="0.01" value={form.costFuel} onChange={(e) => setForm({ ...form, costFuel: Number(e.target.value) })} />
+          </label>
+          <label className="admin-field">
+            Other
+            <input type="number" min={0} step="0.01" value={form.costOther} onChange={(e) => setForm({ ...form, costOther: Number(e.target.value) })} />
+          </label>
+        </div>
+
+        <div className="admin-form-row">
           <label className="admin-field">
             Yield Qty (pak thayu)
             <div className="admin-field-pair">
@@ -156,15 +201,15 @@ export default function VaadiAdmin() {
               <input value={form.yieldUnit} onChange={(e) => setForm({ ...form, yieldUnit: e.target.value })} placeholder="kg" />
             </div>
           </label>
+          <label className="admin-field">
+            Price / Unit (₹)
+            <input type="number" min={0} step="0.01" value={form.pricePerUnit} onChange={(e) => setForm({ ...form, pricePerUnit: Number(e.target.value) })} />
+          </label>
         </div>
         <div className="admin-form-row">
           <label className="admin-field">
             Sale Date
             <input type="date" value={form.saleDate} onChange={(e) => setForm({ ...form, saleDate: e.target.value })} required />
-          </label>
-          <label className="admin-field">
-            Price / Unit (₹)
-            <input type="number" min={0} step="0.01" value={form.pricePerUnit} onChange={(e) => setForm({ ...form, pricePerUnit: Number(e.target.value) })} />
           </label>
         </div>
         <label className="admin-field admin-field-wide">
@@ -173,6 +218,7 @@ export default function VaadiAdmin() {
         </label>
 
         <div className="admin-form-summary">
+          <span>Total Cost: <strong>₹{totalCost}</strong></span>
           <span>Revenue: <strong>₹{revenue}</strong></span>
           <span className={profit >= 0 ? 'pending-ok' : 'pending-due'}>Profit: <strong>₹{profit}</strong></span>
         </div>
@@ -221,7 +267,10 @@ export default function VaadiAdmin() {
                   Seed: {entry.seedQty} {entry.seedUnit} · Yield: {entry.yieldQty} {entry.yieldUnit} · Price ₹{entry.pricePerUnit}/unit
                 </div>
                 <div className="admin-card-meta">
-                  Cost ₹{entry.cost} · Revenue ₹{entry.revenue} · Profit{' '}
+                  Cost — Seed ₹{entry.costSeed} · Khatar ₹{entry.costFertilizer} · Dava ₹{entry.costPesticide} · Majoor ₹{entry.costLabor} · Fuel ₹{entry.costFuel} · Other ₹{entry.costOther}
+                </div>
+                <div className="admin-card-meta">
+                  Total Cost ₹{entry.cost} · Revenue ₹{entry.revenue} · Profit{' '}
                   <strong style={{ color: entry.profit >= 0 ? '#2e5339' : '#c0392b' }}>₹{entry.profit}</strong>
                 </div>
                 {entry.note && <div className="admin-card-meta">{entry.note}</div>}

@@ -172,6 +172,15 @@
   gap: 6px;
 }
 
+.admin-cost-breakdown-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b6b62;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 4px;
+}
+
 input, select, textarea {
   width: 100%;
   padding: 9px 11px;
