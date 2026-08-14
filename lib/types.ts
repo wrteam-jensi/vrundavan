@@ -58,6 +58,8 @@ export interface FarmCropEntry {
   revenue: number;
   profit: number;
   note: string;
+  receiptUrl: string | null;
+  receiptPath: string | null;
   createdAt: number;
 }
 

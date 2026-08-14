@@ -3,6 +3,18 @@
   background: #f4f4f0;
 }
 
+.admin-offline-banner {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  background: #b5482f;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  padding: 7px 12px;
+}
+
 /* ── Header / Nav ── */
 .admin-header {
   position: sticky;

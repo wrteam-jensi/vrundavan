@@ -93,6 +93,23 @@ export default function HarvestingAdmin() {
     setForm(emptyForm(rate ?? 0));
   };
 
+  const repeatLastEntry = () => {
+    if (entries.length === 0) return;
+    const last = entries[0];
+    setEditingId(null);
+    setForm({
+      farmerId: last.farmerId,
+      date: todayStr(),
+      startTime: last.startTime,
+      endTime: last.endTime,
+      ratePerHour: last.ratePerHour,
+      advanceAmount: 0,
+      paidAmount: 0,
+      note: '',
+    });
+    showToast(`Pre-filled from ${last.farmerName}'s last entry.`);
+  };
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const farmer = farmers.find((f) => f.id === form.farmerId);
@@ -221,6 +238,12 @@ export default function HarvestingAdmin() {
           <div className="admin-stat-value warn">₹{summary.totalPending}</div>
         </div>
       </div>
+
+      {entries.length > 0 && !editingId && (
+        <button type="button" className="btn btn-secondary btn-sm" style={{ marginBottom: 10 }} onClick={repeatLastEntry}>
+          ↻ Repeat Last Entry ({entries[0].farmerName})
+        </button>
+      )}
 
       <form onSubmit={onSubmit} className="admin-form">
         <div className="admin-form-row">

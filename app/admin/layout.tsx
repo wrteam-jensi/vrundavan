@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useAuth } from '@/lib/useAuth';
+import { useOnlineStatus } from '@/lib/useOnlineStatus';
 import { AdminUIProvider } from '@/components/AdminUI';
 import './admin.css';
 
@@ -21,6 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isLoginPage = pathname === '/admin/login';
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const online = useOnlineStatus();
 
   useEffect(() => {
     if (loading) return;
@@ -68,6 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             Sign Out
           </button>
         </header>
+        {!online && <div className="admin-offline-banner">📡 Offline — changes will sync when back online</div>}
         <main className="admin-main">{children}</main>
       </div>
     </AdminUIProvider>

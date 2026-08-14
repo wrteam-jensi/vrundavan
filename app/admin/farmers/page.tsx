@@ -126,7 +126,9 @@ export default function FarmersAdmin() {
             return (
               <div key={f.id} className="admin-card">
                 <div className="admin-card-body">
-                  <div className="admin-card-title">{f.name} <span className="sub">({f.village})</span></div>
+                  <div className="admin-card-title">
+                    <a href={`/admin/farmers/${f.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>{f.name}</a> <span className="sub">({f.village})</span>
+                  </div>
                   <div className="admin-card-meta">{f.mobile}{f.farmDetails ? ` — ${f.farmDetails}` : ''}</div>
                   {pending > 0 && (
                     <div className="admin-card-meta">
@@ -135,6 +137,7 @@ export default function FarmersAdmin() {
                   )}
                 </div>
                 <div className="admin-card-actions">
+                  <a href={`/admin/farmers/${f.id}`} className="btn btn-secondary btn-sm">View</a>
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(f)}>Edit</button>
                   <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(f.id)}>Delete</button>
                 </div>

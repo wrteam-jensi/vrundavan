@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState, type FormEvent } from 'react';
+import { useRef, useMemo, useState, type FormEvent } from 'react';
 import { createFarmCropEntry, deleteFarmCropEntry, updateFarmCropEntry, useFarmCropEntries } from '@/lib/farmCrops';
 import { downloadCsv } from '@/lib/csvExport';
+import { deleteImage, uploadImage } from '@/lib/crud';
 import type { FarmCropEntry } from '@/lib/types';
 import CropProfitSummary from '@/components/CropProfitSummary';
 import YearlyComparison from '@/components/YearlyComparison';
@@ -59,6 +60,9 @@ export default function VaadiAdmin() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [cropFilter, setCropFilter] = useState('');
+  const [existingReceipt, setExistingReceipt] = useState<{ url: string; path: string } | null>(null);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   const totalCost =
     Math.round((form.costSeed + form.costFertilizer + form.costPesticide + form.costLabor + form.costFuel + form.costOther) * 100) / 100;
@@ -83,17 +87,32 @@ export default function VaadiAdmin() {
       pricePerUnit: entry.pricePerUnit,
       note: entry.note,
     });
+    setExistingReceipt(entry.receiptUrl && entry.receiptPath ? { url: entry.receiptUrl, path: entry.receiptPath } : null);
+    setReceiptFile(null);
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setForm(EMPTY);
+    setExistingReceipt(null);
+    setReceiptFile(null);
+    if (fileInput.current) fileInput.current.value = '';
   };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
+      let receiptUrl = existingReceipt?.url ?? null;
+      let receiptPath = existingReceipt?.path ?? null;
+
+      if (receiptFile) {
+        if (existingReceipt) await deleteImage(existingReceipt.path);
+        const uploaded = await uploadImage('vaadi-receipts', receiptFile);
+        receiptUrl = uploaded.url;
+        receiptPath = uploaded.path;
+      }
+
       const data = {
         cropName: form.cropName,
         seedQty: form.seedQty,
@@ -112,6 +131,8 @@ export default function VaadiAdmin() {
         revenue,
         profit,
         note: form.note,
+        receiptUrl,
+        receiptPath,
         createdAt: editingId ? (entries.find((e) => e.id === editingId)?.createdAt ?? Date.now()) : Date.now(),
       };
       if (editingId) {
@@ -129,9 +150,10 @@ export default function VaadiAdmin() {
     }
   };
 
-  const onDelete = async (id: string) => {
+  const onDelete = async (entry: FarmCropEntry) => {
     if (!(await confirm('Delete this entry? This cannot be undone.'))) return;
-    await deleteFarmCropEntry(id);
+    await deleteFarmCropEntry(entry.id);
+    if (entry.receiptPath) await deleteImage(entry.receiptPath);
     showToast('Entry deleted.');
   };
 
@@ -239,6 +261,12 @@ export default function VaadiAdmin() {
           <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
         </label>
 
+        <div className="admin-field admin-field-wide">
+          <span style={{ fontSize: 12, color: '#666' }}>Receipt / Bill Photo (optional)</span>
+          <input ref={fileInput} type="file" accept="image/*" capture="environment" onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)} />
+          {existingReceipt && !receiptFile && <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>Photo attached — choose a file to replace it.</div>}
+        </div>
+
         <div className="admin-form-summary">
           <span>Total Cost: <strong>₹{totalCost}</strong></span>
           <span>Revenue: <strong>₹{revenue}</strong></span>
@@ -306,9 +334,13 @@ export default function VaadiAdmin() {
                 </div>
                 {entry.note && <div className="admin-card-meta">{entry.note}</div>}
               </div>
+              {entry.receiptUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={entry.receiptUrl} alt="Receipt" className="admin-card-thumb" style={{ cursor: 'pointer' }} onClick={() => window.open(entry.receiptUrl!, '_blank')} />
+              )}
               <div className="admin-card-actions">
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(entry)}>Edit</button>
-                <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(entry.id)}>Delete</button>
+                <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(entry)}>Delete</button>
               </div>
             </div>
           ))}
