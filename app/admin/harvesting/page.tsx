@@ -5,6 +5,7 @@ import {
   createHarvestEntry,
   deleteHarvestEntry,
   hoursBetween,
+  markEntriesPaid,
   updateHarvestEntry,
   useFarmers,
   useHarvestEntries,
@@ -61,6 +62,8 @@ export default function HarvestingAdmin() {
   const [rateInput, setRateInput] = useState('');
   const [rateBusy, setRateBusy] = useState(false);
   const [rateEditing, setRateEditing] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [markingPaid, setMarkingPaid] = useState(false);
 
   useEffect(() => {
     if (rate != null && !editingId) setForm((f) => ({ ...f, ratePerHour: rate }));
@@ -151,6 +154,31 @@ export default function HarvestingAdmin() {
     if (!(await confirm('Delete this harvesting entry? This cannot be undone.'))) return;
     await deleteHarvestEntry(id);
     showToast('Entry deleted.');
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const onMarkSelectedPaid = async () => {
+    const selected = entries.filter((e) => selectedIds.has(e.id));
+    if (selected.length === 0) return;
+    if (!(await confirm(`Mark ${selected.length} ${selected.length === 1 ? 'entry' : 'entries'} as fully paid?`))) return;
+    setMarkingPaid(true);
+    try {
+      await markEntriesPaid(selected);
+      showToast(`${selected.length} ${selected.length === 1 ? 'entry' : 'entries'} marked paid.`);
+      setSelectedIds(new Set());
+    } catch {
+      showToast('Something went wrong. Try again.', 'error');
+    } finally {
+      setMarkingPaid(false);
+    }
   };
 
   const onSaveRate = async () => {
@@ -331,7 +359,28 @@ export default function HarvestingAdmin() {
         >
           Export CSV
         </button>
+        {filtered.some((e) => e.pendingAmount > 0) && (
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setSelectedIds(new Set(filtered.filter((e) => e.pendingAmount > 0).map((e) => e.id)))}
+          >
+            Select All Pending
+          </button>
+        )}
       </div>
+
+      {selectedIds.size > 0 && (
+        <div className="admin-bulk-bar">
+          <span>{selectedIds.size} selected</span>
+          <button type="button" className="btn btn-primary btn-sm" disabled={markingPaid} onClick={onMarkSelectedPaid}>
+            {markingPaid ? 'Marking…' : 'Mark Selected as Paid'}
+          </button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSelectedIds(new Set())}>
+            Clear Selection
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <SkeletonList rows={4} />
@@ -339,6 +388,15 @@ export default function HarvestingAdmin() {
         <div className="admin-list">
           {filtered.map((entry) => (
             <div key={entry.id} className="admin-card">
+              {entry.pendingAmount > 0 && (
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(entry.id)}
+                  onChange={() => toggleSelect(entry.id)}
+                  style={{ width: 18, height: 18, flexShrink: 0 }}
+                  aria-label={`Select ${entry.farmerName} entry`}
+                />
+              )}
               <div className="admin-card-body">
                 <div className="admin-card-title">
                   {entry.farmerName} <span className="sub">{entry.date} · {entry.startTime}–{entry.endTime}</span>

@@ -15,6 +15,21 @@
   padding: 7px 12px;
 }
 
+.admin-bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: #e7f0ea;
+  border: 1px solid #cfe0d5;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2e5339;
+}
+
 /* ── Header / Nav ── */
 .admin-header {
   position: sticky;
