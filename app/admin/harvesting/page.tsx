@@ -10,8 +10,9 @@ import {
   useHarvestEntries,
   whatsAppUrl,
 } from '@/lib/harvest';
-import { useRatePerHour } from '@/lib/useSettings';
+import { updateRatePerHour, useRatePerHour } from '@/lib/useSettings';
 import type { HarvestEntry } from '@/lib/types';
+import '../admin.css';
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -37,10 +38,17 @@ export default function HarvestingAdmin() {
   const [busy, setBusy] = useState(false);
   const [farmerFilter, setFarmerFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+  const [rateInput, setRateInput] = useState('');
+  const [rateBusy, setRateBusy] = useState(false);
+  const [rateEditing, setRateEditing] = useState(false);
 
   useEffect(() => {
     if (rate != null && !editingId) setForm((f) => ({ ...f, ratePerHour: rate }));
   }, [rate, editingId]);
+
+  useEffect(() => {
+    if (rate != null) setRateInput(String(rate));
+  }, [rate]);
 
   const hours = hoursBetween(form.startTime, form.endTime);
   const total = Math.round(hours * form.ratePerHour * 100) / 100;
@@ -103,6 +111,16 @@ export default function HarvestingAdmin() {
     await deleteHarvestEntry(id);
   };
 
+  const onSaveRate = async () => {
+    setRateBusy(true);
+    try {
+      await updateRatePerHour(Number(rateInput));
+      setRateEditing(false);
+    } finally {
+      setRateBusy(false);
+    }
+  };
+
   const filtered = entries.filter(
     (e) => (!farmerFilter || e.farmerId === farmerFilter) && (!dateFilter || e.date === dateFilter)
   );
@@ -119,99 +137,129 @@ export default function HarvestingAdmin() {
     };
   }, [entries]);
 
-  const cardStyle = { background: '#fff', padding: 16, borderRadius: 10, flex: '1 1 160px' };
-
   return (
-    <div style={{ maxWidth: 960 }}>
-      <h1 style={{ fontSize: 22, marginBottom: 16 }}>Harvesting</h1>
-
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
-        <div style={cardStyle}>
-          <div style={{ fontSize: 12, color: '#888' }}>Today's Hours</div>
-          <div style={{ fontSize: 20, fontWeight: 700 }}>{summary.todayHours}</div>
-        </div>
-        <div style={cardStyle}>
-          <div style={{ fontSize: 12, color: '#888' }}>Today's Amount</div>
-          <div style={{ fontSize: 20, fontWeight: 700 }}>₹{summary.todayAmount}</div>
-        </div>
-        <div style={cardStyle}>
-          <div style={{ fontSize: 12, color: '#888' }}>Total Hours</div>
-          <div style={{ fontSize: 20, fontWeight: 700 }}>{summary.totalHours}</div>
-        </div>
-        <div style={cardStyle}>
-          <div style={{ fontSize: 12, color: '#888' }}>Total Earnings</div>
-          <div style={{ fontSize: 20, fontWeight: 700 }}>₹{summary.totalEarnings}</div>
-        </div>
-        <div style={cardStyle}>
-          <div style={{ fontSize: 12, color: '#888' }}>Total Pending</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#c0392b' }}>₹{summary.totalPending}</div>
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+        <h1 className="admin-page-title" style={{ marginBottom: 0 }}>Harvesting</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {rateEditing ? (
+            <>
+              <label className="admin-field" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                Default Rate/Hour (₹)
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={rateInput}
+                  onChange={(e) => setRateInput(e.target.value)}
+                  style={{ width: 100 }}
+                />
+              </label>
+              <button type="button" className="btn btn-primary btn-sm" disabled={rateBusy} onClick={onSaveRate}>
+                {rateBusy ? 'Saving…' : 'Save'}
+              </button>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setRateEditing(false)}>
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setRateEditing(true)}>
+              Default Rate: ₹{rate ?? '—'}/hr
+            </button>
+          )}
         </div>
       </div>
 
-      <form onSubmit={onSubmit} style={{ background: '#fff', padding: 20, borderRadius: 10, marginBottom: 24, display: 'grid', gap: 10 }}>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <select value={form.farmerId} onChange={(e) => setForm({ ...form, farmerId: e.target.value })} required style={{ flex: '1 1 200px', padding: 8, border: '1px solid #ddd', borderRadius: 6 }}>
+      <div className="admin-stats">
+        <div className="admin-stat-card">
+          <div className="admin-stat-label">Today's Hours</div>
+          <div className="admin-stat-value">{summary.todayHours}</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-label">Today's Amount</div>
+          <div className="admin-stat-value">₹{summary.todayAmount}</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-label">Total Hours</div>
+          <div className="admin-stat-value">{summary.totalHours}</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-label">Total Earnings</div>
+          <div className="admin-stat-value">₹{summary.totalEarnings}</div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-label">Total Pending</div>
+          <div className="admin-stat-value warn">₹{summary.totalPending}</div>
+        </div>
+      </div>
+
+      <form onSubmit={onSubmit} className="admin-form">
+        <div className="admin-form-row">
+          <select value={form.farmerId} onChange={(e) => setForm({ ...form, farmerId: e.target.value })} required>
             <option value="">Select Farmer</option>
             {farmers.map((f) => (
               <option key={f.id} value={f.id}>{f.name} ({f.village})</option>
             ))}
           </select>
-          <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required style={{ flex: '1 1 140px', padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
+          <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />
         </div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <label style={{ flex: '1 1 140px', fontSize: 12, color: '#666' }}>
+        <div className="admin-form-row">
+          <label className="admin-field">
             Start Time
-            <input type="time" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} required style={{ width: '100%', padding: 8, border: '1px solid #ddd', borderRadius: 6, marginTop: 4 }} />
+            <input type="time" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} required />
           </label>
-          <label style={{ flex: '1 1 140px', fontSize: 12, color: '#666' }}>
+          <label className="admin-field">
             End Time
-            <input type="time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} required style={{ width: '100%', padding: 8, border: '1px solid #ddd', borderRadius: 6, marginTop: 4 }} />
+            <input type="time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} required />
           </label>
-          <label style={{ flex: '1 1 140px', fontSize: 12, color: '#666' }}>
+          <label className="admin-field">
             Rate / Hour (₹)
-            <input type="number" min={0} step="0.01" value={form.ratePerHour} onChange={(e) => setForm({ ...form, ratePerHour: Number(e.target.value) })} required style={{ width: '100%', padding: 8, border: '1px solid #ddd', borderRadius: 6, marginTop: 4 }} />
+            <input type="number" min={0} step="0.01" value={form.ratePerHour} onChange={(e) => setForm({ ...form, ratePerHour: Number(e.target.value) })} required />
           </label>
         </div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <label style={{ flex: '1 1 140px', fontSize: 12, color: '#666' }}>
+        <div className="admin-form-row">
+          <label className="admin-field">
             Advance (₹)
-            <input type="number" min={0} step="0.01" value={form.advanceAmount} onChange={(e) => setForm({ ...form, advanceAmount: Number(e.target.value) })} style={{ width: '100%', padding: 8, border: '1px solid #ddd', borderRadius: 6, marginTop: 4 }} />
+            <input type="number" min={0} step="0.01" value={form.advanceAmount} onChange={(e) => setForm({ ...form, advanceAmount: Number(e.target.value) })} />
           </label>
-          <label style={{ flex: '1 1 140px', fontSize: 12, color: '#666' }}>
+          <label className="admin-field">
             Paid Now (₹)
-            <input type="number" min={0} step="0.01" value={form.paidAmount} onChange={(e) => setForm({ ...form, paidAmount: Number(e.target.value) })} style={{ width: '100%', padding: 8, border: '1px solid #ddd', borderRadius: 6, marginTop: 4 }} />
+            <input type="number" min={0} step="0.01" value={form.paidAmount} onChange={(e) => setForm({ ...form, paidAmount: Number(e.target.value) })} />
           </label>
-          <input placeholder="Note (optional)" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} style={{ flex: '1 1 200px', padding: 8, border: '1px solid #ddd', borderRadius: 6, alignSelf: 'flex-end' }} />
+          <label className="admin-field">
+            Note (optional)
+            <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
+          </label>
         </div>
 
-        <div style={{ display: 'flex', gap: 20, fontSize: 14, background: '#f4f4f0', padding: '10px 14px', borderRadius: 8 }}>
+        <div className="admin-form-summary">
           <span>Hours: <strong>{hours}</strong></span>
           <span>Total: <strong>₹{total}</strong></span>
-          <span>Pending: <strong style={{ color: pending > 0 ? '#c0392b' : '#2e5339' }}>₹{pending}</strong></span>
+          <span className={pending > 0 ? 'pending-due' : 'pending-ok'}>Pending: <strong>₹{pending}</strong></span>
         </div>
 
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button type="submit" disabled={busy || hours <= 0} style={{ padding: '8px 16px', background: '#2e5339', color: '#fff', border: 0, borderRadius: 6, cursor: 'pointer' }}>
+        <div className="admin-form-actions">
+          <button type="submit" className="btn btn-primary" disabled={busy || hours <= 0}>
             {editingId ? 'Update Entry' : 'Add Entry'}
           </button>
           {editingId && (
-            <button type="button" onClick={cancelEdit} style={{ padding: '8px 16px', background: '#fff', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer' }}>
+            <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
               Cancel
             </button>
           )}
         </div>
       </form>
 
-      <div style={{ display: 'flex', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-        <select value={farmerFilter} onChange={(e) => setFarmerFilter(e.target.value)} style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }}>
+      <div className="admin-filters">
+        <select value={farmerFilter} onChange={(e) => setFarmerFilter(e.target.value)}>
           <option value="">All Farmers</option>
           {farmers.map((f) => (
             <option key={f.id} value={f.id}>{f.name}</option>
           ))}
         </select>
-        <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
+        <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
         {(farmerFilter || dateFilter) && (
-          <button type="button" onClick={() => { setFarmerFilter(''); setDateFilter(''); }} style={{ padding: '8px 14px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>
+          <button type="button" className="btn btn-secondary" onClick={() => { setFarmerFilter(''); setDateFilter(''); }}>
             Clear Filters
           </button>
         )}
@@ -220,27 +268,30 @@ export default function HarvestingAdmin() {
       {loading ? (
         <p>Loading…</p>
       ) : (
-        <div style={{ display: 'grid', gap: 10 }}>
+        <div className="admin-list">
           {filtered.map((entry) => (
-            <div key={entry.id} style={{ background: '#fff', padding: 12, borderRadius: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: 200 }}>
-                  <div style={{ fontWeight: 600 }}>{entry.farmerName} <span style={{ fontWeight: 400, color: '#888', fontSize: 12 }}>{entry.date} · {entry.startTime}–{entry.endTime}</span></div>
-                  <div style={{ fontSize: 13, color: '#666' }}>
-                    {entry.hours}h × ₹{entry.ratePerHour} = ₹{entry.totalAmount}
-                    {' · '}Advance ₹{entry.advanceAmount} · Paid ₹{entry.paidAmount} · Pending <strong style={{ color: entry.pendingAmount > 0 ? '#c0392b' : '#2e5339' }}>₹{entry.pendingAmount}</strong>
-                  </div>
-                  {entry.note && <div style={{ fontSize: 12, color: '#999' }}>{entry.note}</div>}
+            <div key={entry.id} className="admin-card">
+              <div className="admin-card-body">
+                <div className="admin-card-title">
+                  {entry.farmerName} <span className="sub">{entry.date} · {entry.startTime}–{entry.endTime}</span>
                 </div>
-                <a href={whatsAppUrl(entry)} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 12px', border: '1px solid #25D366', color: '#128C7E', borderRadius: 6, background: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
+                <div className="admin-card-meta">
+                  {entry.hours}h × ₹{entry.ratePerHour} = ₹{entry.totalAmount}
+                  {' · '}Advance ₹{entry.advanceAmount} · Paid ₹{entry.paidAmount} · Pending{' '}
+                  <strong style={{ color: entry.pendingAmount > 0 ? '#c0392b' : '#2e5339' }}>₹{entry.pendingAmount}</strong>
+                </div>
+                {entry.note && <div className="admin-card-meta">{entry.note}</div>}
+              </div>
+              <div className="admin-card-actions">
+                <a href={whatsAppUrl(entry)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
                   Send WhatsApp
                 </a>
-                <button type="button" onClick={() => startEdit(entry)} style={{ padding: '6px 12px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>Edit</button>
-                <button type="button" onClick={() => onDelete(entry.id)} style={{ padding: '6px 12px', border: '1px solid #f0c4c4', color: '#c0392b', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>Delete</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(entry)}>Edit</button>
+                <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(entry.id)}>Delete</button>
               </div>
             </div>
           ))}
-          {filtered.length === 0 && <p style={{ color: '#888' }}>No harvesting entries found.</p>}
+          {filtered.length === 0 && <div className="admin-empty">No harvesting entries found.</div>}
         </div>
       )}
     </div>

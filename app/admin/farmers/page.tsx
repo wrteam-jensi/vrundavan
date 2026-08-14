@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { createFarmer, deleteFarmer, updateFarmer, useFarmers } from '@/lib/harvest';
 import type { Farmer } from '@/lib/types';
+import '../admin.css';
 
 const EMPTY = { name: '', mobile: '', village: '', farmDetails: '' };
 
@@ -43,22 +44,34 @@ export default function FarmersAdmin() {
   };
 
   return (
-    <div style={{ maxWidth: 720 }}>
-      <h1 style={{ fontSize: 22, marginBottom: 16 }}>Farmers</h1>
+    <div>
+      <h1 className="admin-page-title">Farmers</h1>
 
-      <form onSubmit={onSubmit} style={{ background: '#fff', padding: 20, borderRadius: 10, marginBottom: 24, display: 'grid', gap: 10 }}>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required style={{ flex: '1 1 200px', padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
-          <input placeholder="Mobile (WhatsApp)" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} required style={{ flex: '1 1 160px', padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
-          <input placeholder="Village" value={form.village} onChange={(e) => setForm({ ...form, village: e.target.value })} required style={{ flex: '1 1 160px', padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
+      <form onSubmit={onSubmit} className="admin-form">
+        <div className="admin-form-row">
+          <label className="admin-field">
+            Name
+            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          </label>
+          <label className="admin-field">
+            Mobile (WhatsApp)
+            <input value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} required />
+          </label>
+          <label className="admin-field">
+            Village
+            <input value={form.village} onChange={(e) => setForm({ ...form, village: e.target.value })} required />
+          </label>
         </div>
-        <textarea placeholder="Farm details" value={form.farmDetails} onChange={(e) => setForm({ ...form, farmDetails: e.target.value })} rows={2} style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6, fontFamily: 'inherit' }} />
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button type="submit" disabled={busy} style={{ padding: '8px 16px', background: '#2e5339', color: '#fff', border: 0, borderRadius: 6, cursor: 'pointer' }}>
+        <label className="admin-field admin-field-wide">
+          Farm details
+          <textarea value={form.farmDetails} onChange={(e) => setForm({ ...form, farmDetails: e.target.value })} rows={2} />
+        </label>
+        <div className="admin-form-actions">
+          <button type="submit" className="btn btn-primary" disabled={busy}>
             {editingId ? 'Update' : 'Add Farmer'}
           </button>
           {editingId && (
-            <button type="button" onClick={cancelEdit} style={{ padding: '8px 16px', background: '#fff', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer' }}>
+            <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
               Cancel
             </button>
           )}
@@ -68,18 +81,20 @@ export default function FarmersAdmin() {
       {loading ? (
         <p>Loading…</p>
       ) : (
-        <div style={{ display: 'grid', gap: 10 }}>
+        <div className="admin-list">
           {farmers.map((f) => (
-            <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', padding: 12, borderRadius: 8 }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600 }}>{f.name} <span style={{ fontWeight: 400, color: '#888', fontSize: 12 }}>({f.village})</span></div>
-                <div style={{ fontSize: 13, color: '#666' }}>{f.mobile}{f.farmDetails ? ` — ${f.farmDetails}` : ''}</div>
+            <div key={f.id} className="admin-card">
+              <div className="admin-card-body">
+                <div className="admin-card-title">{f.name} <span className="sub">({f.village})</span></div>
+                <div className="admin-card-meta">{f.mobile}{f.farmDetails ? ` — ${f.farmDetails}` : ''}</div>
               </div>
-              <button type="button" onClick={() => startEdit(f)} style={{ padding: '6px 12px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>Edit</button>
-              <button type="button" onClick={() => onDelete(f.id)} style={{ padding: '6px 12px', border: '1px solid #f0c4c4', color: '#c0392b', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>Delete</button>
+              <div className="admin-card-actions">
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(f)}>Edit</button>
+                <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(f.id)}>Delete</button>
+              </div>
             </div>
           ))}
-          {farmers.length === 0 && <p style={{ color: '#888' }}>No farmers yet. Add one above.</p>}
+          {farmers.length === 0 && <div className="admin-empty">No farmers yet. Add one above.</div>}
         </div>
       )}
     </div>

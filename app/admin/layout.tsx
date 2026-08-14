@@ -10,10 +10,6 @@ import './admin.css';
 const NAV_LINKS = [
   { href: '/admin/harvesting', label: 'Harvesting' },
   { href: '/admin/farmers', label: 'Farmers' },
-  { href: '/admin', label: 'Produce' },
-  { href: '/admin/crops', label: 'Crops' },
-  { href: '/admin/fruits', label: 'Fruits' },
-  { href: '/admin/settings', label: 'Settings' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -26,7 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (loading) return;
     if (!user && !isLoginPage) router.replace('/admin/login');
-    if (user && isLoginPage) router.replace('/admin');
+    if (user && isLoginPage) router.replace('/admin/harvesting');
   }, [user, loading, isLoginPage, router]);
 
   useEffect(() => {
