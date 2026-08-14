@@ -38,10 +38,6 @@ const EMPTY_PAK = {
   vaadiId: '',
   cropName: '',
   plantedDate: todayStr(),
-  harvestedDate: '' as string,
-  yieldQty: 0,
-  yieldUnit: 'kg',
-  pricePerUnit: 0,
   note: '',
 };
 
@@ -50,6 +46,13 @@ const EMPTY_EXPENSE = {
   category: 'seed' as ExpenseCategory,
   amount: 0,
   note: '',
+};
+
+const EMPTY_HARVEST = {
+  harvestedDate: todayStr(),
+  yieldQty: 0,
+  yieldUnit: 'kg',
+  pricePerUnit: 0,
 };
 
 type ExpenseCsvRow = {
@@ -88,6 +91,8 @@ export default function PakAdmin() {
   const [statusFilter, setStatusFilter] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [expenseForm, setExpenseForm] = useState(EMPTY_EXPENSE);
+  const [harvestId, setHarvestId] = useState<string | null>(null);
+  const [harvestForm, setHarvestForm] = useState(EMPTY_HARVEST);
 
   const startEdit = (pak: Pak) => {
     setEditingId(pak.id);
@@ -95,10 +100,6 @@ export default function PakAdmin() {
       vaadiId: pak.vaadiId,
       cropName: pak.cropName,
       plantedDate: pak.plantedDate,
-      harvestedDate: pak.harvestedDate ?? '',
-      yieldQty: pak.yieldQty,
-      yieldUnit: pak.yieldUnit,
-      pricePerUnit: pak.pricePerUnit,
       note: pak.note,
     });
   };
@@ -117,11 +118,11 @@ export default function PakAdmin() {
         vaadiId: form.vaadiId,
         cropName: form.cropName,
         plantedDate: form.plantedDate,
-        harvestedDate: form.harvestedDate || null,
+        harvestedDate: existing?.harvestedDate ?? null,
         expenses: existing?.expenses ?? [],
-        yieldQty: form.yieldQty,
-        yieldUnit: form.yieldUnit,
-        pricePerUnit: form.pricePerUnit,
+        yieldQty: existing?.yieldQty ?? 0,
+        yieldUnit: existing?.yieldUnit ?? 'kg',
+        pricePerUnit: existing?.pricePerUnit ?? 0,
         note: form.note,
         createdAt: existing?.createdAt ?? Date.now(),
       };
@@ -169,6 +170,35 @@ export default function PakAdmin() {
     const { id, ...data } = pak;
     await updatePak(id, { ...data, expenses: pak.expenses.filter((_, i) => i !== index) });
     showToast('Expense removed.');
+  };
+
+  const startHarvest = (pak: Pak) => {
+    setHarvestId(pak.id);
+    setHarvestForm({
+      harvestedDate: pak.harvestedDate ?? todayStr(),
+      yieldQty: pak.yieldQty,
+      yieldUnit: pak.yieldUnit,
+      pricePerUnit: pak.pricePerUnit,
+    });
+  };
+
+  const cancelHarvest = () => {
+    setHarvestId(null);
+    setHarvestForm(EMPTY_HARVEST);
+  };
+
+  const saveHarvest = async (pak: Pak, e: FormEvent) => {
+    e.preventDefault();
+    const { id, ...data } = pak;
+    await updatePak(id, {
+      ...data,
+      harvestedDate: harvestForm.harvestedDate,
+      yieldQty: harvestForm.yieldQty,
+      yieldUnit: harvestForm.yieldUnit,
+      pricePerUnit: harvestForm.pricePerUnit,
+    });
+    cancelHarvest();
+    showToast('Harvest recorded.');
   };
 
   const cropNames = useMemo(() => Array.from(new Set(paks.map((p) => p.cropName))).sort(), [paks]);
@@ -308,24 +338,6 @@ export default function PakAdmin() {
             Vavayo (Planted Date)
             <input type="date" value={form.plantedDate} onChange={(e) => setForm({ ...form, plantedDate: e.target.value })} required />
           </label>
-          <label className="admin-field">
-            Nikdyo (Harvested Date)
-            <input type="date" value={form.harvestedDate} onChange={(e) => setForm({ ...form, harvestedDate: e.target.value })} />
-          </label>
-        </div>
-
-        <div className="admin-form-row">
-          <label className="admin-field">
-            Yield Qty
-            <div className="admin-field-pair">
-              <input type="number" min={0} step="0.01" value={form.yieldQty} onChange={(e) => setForm({ ...form, yieldQty: Number(e.target.value) })} />
-              <input value={form.yieldUnit} onChange={(e) => setForm({ ...form, yieldUnit: e.target.value })} placeholder="kg" />
-            </div>
-          </label>
-          <label className="admin-field">
-            Price / Unit (₹)
-            <input type="number" min={0} step="0.01" value={form.pricePerUnit} onChange={(e) => setForm({ ...form, pricePerUnit: Number(e.target.value) })} />
-          </label>
         </div>
         <label className="admin-field admin-field-wide">
           Note (optional)
@@ -426,9 +438,60 @@ export default function PakAdmin() {
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => setExpandedId(expanded ? null : pak.id)}>
                     {expanded ? 'Hide Expenses' : `Expenses (${pak.expenses.length})`}
                   </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => (harvestId === pak.id ? cancelHarvest() : startHarvest(pak))}
+                  >
+                    {harvestId === pak.id ? 'Cancel Harvest' : pak.harvestedDate ? 'Edit Harvest' : 'Mark Harvested'}
+                  </button>
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(pak)}>Edit</button>
                   <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(pak)}>Delete</button>
                 </div>
+
+                {harvestId === pak.id && (
+                  <form onSubmit={(e) => saveHarvest(pak, e)} className="admin-form-row" style={{ marginTop: 12, borderTop: '1px solid #e5e5e0', paddingTop: 12 }}>
+                    <label className="admin-field">
+                      Nikdyo (Harvested Date)
+                      <input
+                        type="date"
+                        value={harvestForm.harvestedDate}
+                        onChange={(e) => setHarvestForm({ ...harvestForm, harvestedDate: e.target.value })}
+                        required
+                      />
+                    </label>
+                    <label className="admin-field">
+                      Yield Qty
+                      <div className="admin-field-pair">
+                        <input
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          value={harvestForm.yieldQty}
+                          onChange={(e) => setHarvestForm({ ...harvestForm, yieldQty: Number(e.target.value) })}
+                        />
+                        <input
+                          value={harvestForm.yieldUnit}
+                          onChange={(e) => setHarvestForm({ ...harvestForm, yieldUnit: e.target.value })}
+                          placeholder="kg"
+                        />
+                      </div>
+                    </label>
+                    <label className="admin-field">
+                      Price / Unit (₹)
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        value={harvestForm.pricePerUnit}
+                        onChange={(e) => setHarvestForm({ ...harvestForm, pricePerUnit: Number(e.target.value) })}
+                      />
+                    </label>
+                    <div className="admin-form-actions">
+                      <button type="submit" className="btn btn-primary btn-sm">Save Harvest</button>
+                    </div>
+                  </form>
+                )}
 
                 {expanded && (
                   <div style={{ marginTop: 12, borderTop: '1px solid #e5e5e0', paddingTop: 12 }}>

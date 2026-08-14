@@ -13,7 +13,6 @@ const NAV_LINKS = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: '🏠' },
   { href: '/admin/harvesting', label: 'Harvesting', icon: '🌾' },
   { href: '/admin/farmers', label: 'Farmers', icon: '👨‍🌾' },
-  { href: '/admin/vaadi', label: 'My Farm', icon: '📊' },
   { href: '/admin/pak', label: 'Pak', icon: '🌱' },
   { href: '/admin/vaadis', label: 'Vaadis', icon: '🏞️' },
 ];
