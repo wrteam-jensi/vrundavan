@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { href: '/admin/harvesting', label: 'Harvesting', icon: '🌾' },
   { href: '/admin/farmers', label: 'Farmers', icon: '👨‍🌾' },
   { href: '/admin/vaadi', label: 'My Farm', icon: '📊' },
+  { href: '/admin/pak', label: 'Pak', icon: '🌱' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

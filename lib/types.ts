@@ -63,6 +63,28 @@ export interface FarmCropEntry {
   createdAt: number;
 }
 
+export type ExpenseCategory = 'seed' | 'fertilizer' | 'pesticide' | 'labor' | 'fuel' | 'other';
+
+export interface PakExpense {
+  date: string; // YYYY-MM-DD
+  category: ExpenseCategory;
+  amount: number;
+  note: string;
+}
+
+export interface Pak {
+  id: string;
+  cropName: string;
+  plantedDate: string; // YYYY-MM-DD, vavayo
+  harvestedDate: string | null; // YYYY-MM-DD, nikdyo — null = still growing
+  expenses: PakExpense[];
+  yieldQty: number;
+  yieldUnit: string;
+  pricePerUnit: number;
+  note: string;
+  createdAt: number;
+}
+
 export interface CropFruitItem {
   id: string;
   emoji: string;
