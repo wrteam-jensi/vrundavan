@@ -6,6 +6,8 @@ import { useFarmers } from '@/lib/harvest';
 import type { FarmCropEntry } from '@/lib/types';
 import CropProfitSummary from '@/components/CropProfitSummary';
 import YearlyComparison from '@/components/YearlyComparison';
+import SkeletonList from '@/components/SkeletonList';
+import { useAdminUI } from '@/components/AdminUI';
 import '../admin.css';
 
 function todayStr() {
@@ -22,6 +24,7 @@ const EMPTY = {
 };
 
 export default function VaadiAdmin() {
+  const { showToast, confirm } = useAdminUI();
   const { farmers } = useFarmers();
   const { entries, loading } = useFarmCropEntries();
   const [form, setForm] = useState(EMPTY);
@@ -68,18 +71,23 @@ export default function VaadiAdmin() {
       };
       if (editingId) {
         await updateFarmCropEntry(editingId, data);
+        showToast('Entry updated.');
       } else {
         await createFarmCropEntry(data);
+        showToast('Entry added.');
       }
       cancelEdit();
+    } catch {
+      showToast('Something went wrong. Try again.', 'error');
     } finally {
       setBusy(false);
     }
   };
 
   const onDelete = async (id: string) => {
-    if (!confirm('Delete this entry?')) return;
+    if (!(await confirm('Delete this entry? This cannot be undone.'))) return;
     await deleteFarmCropEntry(id);
+    showToast('Entry deleted.');
   };
 
   const filtered = entries.filter(
@@ -189,7 +197,7 @@ export default function VaadiAdmin() {
       </div>
 
       {loading ? (
-        <p>Loading…</p>
+        <SkeletonList rows={3} />
       ) : (
         <div className="admin-list">
           {filtered.map((entry) => (

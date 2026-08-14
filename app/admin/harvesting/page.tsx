@@ -13,6 +13,8 @@ import {
 import { updateRatePerHour, useRatePerHour } from '@/lib/useSettings';
 import type { HarvestEntry } from '@/lib/types';
 import MonthlyStatement from '@/components/MonthlyStatement';
+import SkeletonList from '@/components/SkeletonList';
+import { useAdminUI } from '@/components/AdminUI';
 import '../admin.css';
 
 function todayStr() {
@@ -31,6 +33,7 @@ const emptyForm = (rate: number) => ({
 });
 
 export default function HarvestingAdmin() {
+  const { showToast, confirm } = useAdminUI();
   const { farmers } = useFarmers();
   const { entries, loading } = useHarvestEntries();
   const rate = useRatePerHour();
@@ -99,18 +102,23 @@ export default function HarvestingAdmin() {
       };
       if (editingId) {
         await updateHarvestEntry(editingId, data);
+        showToast('Entry updated.');
       } else {
         await createHarvestEntry(data);
+        showToast('Entry added.');
       }
       cancelEdit();
+    } catch {
+      showToast('Something went wrong. Try again.', 'error');
     } finally {
       setBusy(false);
     }
   };
 
   const onDelete = async (id: string) => {
-    if (!confirm('Delete this harvesting entry?')) return;
+    if (!(await confirm('Delete this harvesting entry? This cannot be undone.'))) return;
     await deleteHarvestEntry(id);
+    showToast('Entry deleted.');
   };
 
   const onSaveRate = async () => {
@@ -118,6 +126,7 @@ export default function HarvestingAdmin() {
     try {
       await updateRatePerHour(Number(rateInput));
       setRateEditing(false);
+      showToast('Default rate updated.');
     } finally {
       setRateBusy(false);
     }
@@ -280,7 +289,7 @@ export default function HarvestingAdmin() {
       </div>
 
       {loading ? (
-        <p>Loading…</p>
+        <SkeletonList rows={4} />
       ) : (
         <div className="admin-list">
           {filtered.map((entry) => (

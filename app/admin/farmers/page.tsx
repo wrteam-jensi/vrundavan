@@ -5,11 +5,14 @@ import { createFarmer, deleteFarmer, updateFarmer, useFarmers, useHarvestEntries
 import { useFarmCropEntries } from '@/lib/farmCrops';
 import { combinedStatementStats, whatsAppCombinedStatementUrl } from '@/lib/combinedStatement';
 import type { Farmer } from '@/lib/types';
+import SkeletonList from '@/components/SkeletonList';
+import { useAdminUI } from '@/components/AdminUI';
 import '../admin.css';
 
 const EMPTY = { name: '', mobile: '', village: '', farmDetails: '', profitSharePercent: 0 };
 
 export default function FarmersAdmin() {
+  const { showToast, confirm } = useAdminUI();
   const { farmers, loading } = useFarmers();
   const { entries } = useHarvestEntries();
   const { entries: cropEntries } = useFarmCropEntries();
@@ -41,18 +44,23 @@ export default function FarmersAdmin() {
     try {
       if (editingId) {
         await updateFarmer(editingId, form);
+        showToast('Farmer updated.');
       } else {
         await createFarmer(form);
+        showToast('Farmer added.');
       }
       cancelEdit();
+    } catch {
+      showToast('Something went wrong. Try again.', 'error');
     } finally {
       setBusy(false);
     }
   };
 
   const onDelete = async (id: string) => {
-    if (!confirm('Delete this farmer? Their harvesting history will remain but no longer link to a farmer record.')) return;
+    if (!(await confirm('Delete this farmer? Their harvesting history will remain but no longer link to a farmer record.'))) return;
     await deleteFarmer(id);
+    showToast('Farmer deleted.');
   };
 
   const visibleFarmers = useMemo(() => {
@@ -119,7 +127,7 @@ export default function FarmersAdmin() {
       </div>
 
       {loading ? (
-        <p>Loading…</p>
+        <SkeletonList rows={3} />
       ) : (
         <div className="admin-list">
           {visibleFarmers.map((f) => {

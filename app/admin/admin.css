@@ -15,6 +15,11 @@
   padding: 12px 20px;
   background: #fff;
   border-bottom: 1px solid #e5e5e0;
+  transition: box-shadow 0.2s ease;
+}
+
+.admin-header.scrolled {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
 .admin-brand {
@@ -314,6 +319,12 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-card:hover {
+  border-color: #d8d8d0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .admin-card-thumb {
@@ -483,4 +494,105 @@ input:focus, select:focus, textarea:focus {
   .admin-form-actions .btn {
     flex: 1 1 auto;
   }
+}
+
+/* ── Skeleton loading ── */
+.admin-skeleton-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-skeleton-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #ececE6;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-skeleton-block {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #eeeee8 25%, #f5f5f0 37%, #eeeee8 63%);
+  background-size: 400% 100%;
+  animation: admin-shimmer 1.4s ease infinite;
+}
+
+@keyframes admin-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* ── Toasts ── */
+.admin-toast-stack {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+  width: min(90vw, 420px);
+}
+
+.admin-toast {
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  animation: admin-toast-in 0.2s ease;
+  text-align: center;
+}
+
+@keyframes admin-toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-toast-success {
+  background: #2e5339;
+}
+
+.admin-toast-error {
+  background: #c0392b;
+}
+
+/* ── Confirm dialog ── */
+.admin-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 90;
+  padding: 20px;
+}
+
+.admin-confirm-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 22px;
+  max-width: 340px;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.admin-confirm-message {
+  font-size: 14px;
+  color: #1a1a1a;
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+
+.admin-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
