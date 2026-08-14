@@ -39,6 +39,19 @@ export interface HarvestEntry {
   createdAt: number;
 }
 
+export interface FarmCropEntry {
+  id: string;
+  farmerId: string;
+  farmerName: string;
+  cropName: string;
+  date: string; // YYYY-MM-DD
+  cost: number;
+  revenue: number;
+  profit: number;
+  note: string;
+  createdAt: number;
+}
+
 export interface CropFruitItem {
   id: string;
   emoji: string;

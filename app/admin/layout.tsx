@@ -10,6 +10,7 @@ import './admin.css';
 const NAV_LINKS = [
   { href: '/admin/harvesting', label: 'Harvesting' },
   { href: '/admin/farmers', label: 'Farmers' },
+  { href: '/admin/vaadi', label: 'My Farm' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

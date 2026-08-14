@@ -12,6 +12,7 @@ import {
 } from '@/lib/harvest';
 import { updateRatePerHour, useRatePerHour } from '@/lib/useSettings';
 import type { HarvestEntry } from '@/lib/types';
+import MonthlyStatement from '@/components/MonthlyStatement';
 import '../admin.css';
 
 function todayStr() {
@@ -253,6 +254,8 @@ export default function HarvestingAdmin() {
           )}
         </div>
       </form>
+
+      <MonthlyStatement farmers={farmers} entries={entries} />
 
       <div className="admin-filters">
         <select value={farmerFilter} onChange={(e) => setFarmerFilter(e.target.value)}>

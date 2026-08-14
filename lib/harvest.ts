@@ -75,9 +75,23 @@ export async function deleteHarvestEntry(id: string) {
   await deleteDoc(doc(db, 'harvestEntries', id));
 }
 
+function normalizePhone(mobile: string) {
+  const digits = mobile.replace(/\D/g, '');
+  return digits.length === 10 ? `91${digits}` : digits;
+}
+
 export function whatsAppUrl(entry: HarvestEntry) {
-  const digits = entry.farmerMobile.replace(/\D/g, '');
-  const phone = digits.length === 10 ? `91${digits}` : digits;
   const message = `Namaste ${entry.farmerName},\nTamara farm par ${entry.date} na roj ${entry.hours} kalak harvesting kaam thayu.\nTotal Charge: ₹${entry.totalAmount}\nPaid: ₹${entry.paidAmount + entry.advanceAmount}\nPending: ₹${entry.pendingAmount}\n\nThank you.`;
-  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/${normalizePhone(entry.farmerMobile)}?text=${encodeURIComponent(message)}`;
+}
+
+export function whatsAppStatementUrl(farmer: Farmer, monthLabel: string, stats: {
+  totalHours: number;
+  totalAmount: number;
+  totalPaid: number;
+  totalPending: number;
+  entryCount: number;
+}) {
+  const message = `Namaste ${farmer.name},\n${monthLabel} mahina nu harvesting summary:\n\nKul Entries: ${stats.entryCount}\nKul Kalak: ${stats.totalHours}\nKul Charge: ₹${stats.totalAmount}\nPaid: ₹${stats.totalPaid}\nPending: ₹${stats.totalPending}\n\nThank you.`;
+  return `https://wa.me/${normalizePhone(farmer.mobile)}?text=${encodeURIComponent(message)}`;
 }
