@@ -152,6 +152,23 @@
   color: #c0392b;
 }
 
+.admin-lang-toggle {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2e5339;
+  white-space: nowrap;
+}
+
+.admin-lang-toggle:hover {
+  border-color: #2e5339;
+  background: #f2f7f3;
+}
+
 .admin-main {
   padding: 20px;
   max-width: 1000px;
