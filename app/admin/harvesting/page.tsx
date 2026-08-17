@@ -9,7 +9,7 @@ import {
   updateHarvestEntry,
   useFarmers,
   useHarvestEntries,
-  whatsAppUrl,
+  whatsAppEntryUrl,
 } from '@/lib/harvest';
 import { updateRatePerHour, useRatePerHour } from '@/lib/useSettings';
 import { downloadCsv } from '@/lib/csvExport';
@@ -418,7 +418,7 @@ export default function HarvestingAdmin() {
                 {entry.note && <div className="admin-card-meta">{entry.note}</div>}
               </div>
               <div className="admin-card-actions">
-                <a href={whatsAppUrl(entry)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
+                <a href={whatsAppEntryUrl(entry, entries)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
                   Send WhatsApp
                 </a>
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(entry)}>Edit</button>

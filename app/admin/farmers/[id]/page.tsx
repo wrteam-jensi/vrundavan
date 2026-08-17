@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useFarmers, useHarvestEntries, whatsAppUrl } from '@/lib/harvest';
+import { useFarmers, useHarvestEntries, whatsAppEntryUrl } from '@/lib/harvest';
 import SkeletonList from '@/components/SkeletonList';
 import '../../admin.css';
 
@@ -95,7 +95,7 @@ export default function FarmerDetail() {
                   {entry.note && <div className="admin-card-meta">{entry.note}</div>}
                 </div>
                 <div className="admin-card-actions">
-                  <a href={whatsAppUrl(entry)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
+                  <a href={whatsAppEntryUrl(entry, entries)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
                     WhatsApp
                   </a>
                 </div>

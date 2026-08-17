@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useFarmers, useHarvestEntries, whatsAppUrl } from '@/lib/harvest';
+import { useFarmers, useHarvestEntries, whatsAppEntryUrl } from '@/lib/harvest';
 import { useFarmCropEntries } from '@/lib/farmCrops';
 import SkeletonList from '@/components/SkeletonList';
 import '../admin.css';
@@ -112,7 +112,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="admin-card-actions">
-                    <a href={whatsAppUrl(entry)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
+                    <a href={whatsAppEntryUrl(entry, harvestEntries)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
                       WhatsApp
                     </a>
                   </div>

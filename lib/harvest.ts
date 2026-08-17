@@ -92,8 +92,27 @@ function normalizePhone(mobile: string) {
   return digits.length === 10 ? `91${digits}` : digits;
 }
 
-export function whatsAppUrl(entry: HarvestEntry) {
-  const message = `Namaste ${entry.farmerName},\nTamara farm par ${entry.date} na roj ${entry.hours} kalak harvesting kaam thayu.\nTotal Charge: ₹${entry.totalAmount}\nPaid: ₹${entry.paidAmount + entry.advanceAmount}\nPending: ₹${entry.pendingAmount}\n\nThank you.`;
+// Merges same farmer + same date entries (e.g. two shifts in one day) into one message,
+// and adds the farmer's overall pending total (across all dates), not just this date's.
+export function whatsAppEntryUrl(entry: HarvestEntry, allEntries: HarvestEntry[]) {
+  const sameDayEntries = allEntries.filter((e) => e.farmerId === entry.farmerId && e.date === entry.date);
+  const totalHours = Math.round(sameDayEntries.reduce((s, e) => s + e.hours, 0) * 100) / 100;
+  const totalAmount = Math.round(sameDayEntries.reduce((s, e) => s + e.totalAmount, 0) * 100) / 100;
+  const totalPaid = Math.round(sameDayEntries.reduce((s, e) => s + e.paidAmount + e.advanceAmount, 0) * 100) / 100;
+  const dayPending = Math.round(sameDayEntries.reduce((s, e) => s + e.pendingAmount, 0) * 100) / 100;
+  const overallPending = Math.round(
+    allEntries.filter((e) => e.farmerId === entry.farmerId).reduce((s, e) => s + e.pendingAmount, 0) * 100
+  ) / 100;
+
+  const history = sameDayEntries
+    .map((e) => `${e.startTime}–${e.endTime}: ${e.hours}h × ₹${e.ratePerHour} = ₹${e.totalAmount}`)
+    .join('\n');
+
+  const message =
+    sameDayEntries.length > 1
+      ? `Namaste ${entry.farmerName},\nTamara farm par ${entry.date} na roj harvesting kaam thayu:\n\n${history}\n\nKul Kalak: ${totalHours}\nTotal Charge: ₹${totalAmount}\nPaid: ₹${totalPaid}\nAaje nu Pending: ₹${dayPending}\nKul Pending (badha divas): ₹${overallPending}\n\nThank you.`
+      : `Namaste ${entry.farmerName},\nTamara farm par ${entry.date} na roj ${entry.hours} kalak harvesting kaam thayu (₹${entry.ratePerHour}/kalak).\nTotal Charge: ₹${entry.totalAmount}\nPaid: ₹${entry.paidAmount + entry.advanceAmount}\nAaje nu Pending: ₹${entry.pendingAmount}\nKul Pending (badha divas): ₹${overallPending}\n\nThank you.`;
+
   return `https://wa.me/${normalizePhone(entry.farmerMobile)}?text=${encodeURIComponent(message)}`;
 }
 
