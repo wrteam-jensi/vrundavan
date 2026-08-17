@@ -73,6 +73,7 @@ export interface PakExpense {
 }
 
 export interface VaadiPartner {
+  id: string;
   name: string;
   sharePercent: number;
 }
@@ -82,6 +83,19 @@ export interface Vaadi {
   name: string;
   partners: VaadiPartner[];
   note: string;
+  createdAt: number;
+}
+
+export interface PartnerWithdrawal {
+  id: string;
+  vaadiId: string;
+  partnerId: string;
+  partnerName: string;
+  amount: number;
+  date: string; // YYYY-MM-DD
+  paymentMethod: string;
+  note: string;
+  refId: string;
   createdAt: number;
 }
 

@@ -1,14 +1,23 @@
 'use client';
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { createVaadi, deleteVaadi, updateVaadi, useVaadis } from '@/lib/vaadis';
+import { createVaadi, deleteVaadi, updateVaadi, useVaadis, vaadiRollup } from '@/lib/vaadis';
 import { usePaks } from '@/lib/paks';
+import { createPartnerWithdrawal, usePartnerWithdrawals } from '@/lib/partnerWithdrawals';
 import type { Vaadi, VaadiPartner } from '@/lib/types';
 import SkeletonList from '@/components/SkeletonList';
 import { useAdminUI } from '@/components/AdminUI';
 import '../admin.css';
 
-const EMPTY_PARTNER: VaadiPartner = { name: '', sharePercent: 0 };
+const EMPTY_PARTNER: VaadiPartner = { id: '', name: '', sharePercent: 0 };
+
+const EMPTY_WITHDRAWAL = {
+  amount: 0,
+  date: new Date().toISOString().slice(0, 10),
+  paymentMethod: '',
+  note: '',
+  refId: '',
+};
 
 const EMPTY_VAADI = {
   name: '',
@@ -16,21 +25,18 @@ const EMPTY_VAADI = {
   note: '',
 };
 
-function totalCostOf(pak: { expenses: { amount: number }[] }) {
-  return pak.expenses.reduce((s, e) => s + e.amount, 0);
-}
-
-function revenueOf(pak: { yieldQty: number; pricePerUnit: number }) {
-  return pak.yieldQty * pak.pricePerUnit;
-}
-
 export default function VaadisAdmin() {
   const { showToast, confirm } = useAdminUI();
   const { vaadis, loading } = useVaadis();
   const { paks } = usePaks();
+  const { withdrawals } = usePartnerWithdrawals();
   const [form, setForm] = useState(EMPTY_VAADI);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [withdrawFor, setWithdrawFor] = useState<{ vaadiId: string; partnerId: string; partnerName: string } | null>(null);
+  const [withdrawForm, setWithdrawForm] = useState(EMPTY_WITHDRAWAL);
+  const [withdrawBusy, setWithdrawBusy] = useState(false);
+  const [historyFor, setHistoryFor] = useState<string | null>(null);
 
   const partnerTotal = Math.round(form.partners.reduce((s, p) => s + p.sharePercent, 0) * 100) / 100;
 
@@ -106,19 +112,66 @@ export default function VaadisAdmin() {
     });
   };
 
+  const withdrawnByPartner = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const w of withdrawals) map.set(w.partnerId, (map.get(w.partnerId) ?? 0) + w.amount);
+    return map;
+  }, [withdrawals]);
+
   const rollups = useMemo(() => {
     return vaadis.map((vaadi) => {
-      const vaadiPaks = paks.filter((p) => p.vaadiId === vaadi.id);
-      const cost = Math.round(vaadiPaks.reduce((s, p) => s + totalCostOf(p), 0) * 100) / 100;
-      const revenue = Math.round(vaadiPaks.reduce((s, p) => s + revenueOf(p), 0) * 100) / 100;
-      const profit = Math.round((revenue - cost) * 100) / 100;
-      const partnerShares = vaadi.partners.map((p) => ({
-        ...p,
-        amount: Math.round((profit * p.sharePercent) / 100 * 100) / 100,
-      }));
-      return { vaadi, pakCount: vaadiPaks.length, cost, revenue, profit, partnerShares };
+      const { pakCount, cost, revenue, profit, partnerShares } = vaadiRollup(vaadi, paks);
+      const partnerBalances = partnerShares.map((p) => {
+        const withdrawn = Math.round((withdrawnByPartner.get(p.id) ?? 0) * 100) / 100;
+        const remaining = Math.round((p.amount - withdrawn) * 100) / 100;
+        return { ...p, withdrawn, remaining };
+      });
+      return { vaadi, pakCount, cost, revenue, profit, partnerShares: partnerBalances };
     });
-  }, [vaadis, paks]);
+  }, [vaadis, paks, withdrawnByPartner]);
+
+  const startWithdraw = (vaadiId: string, partnerId: string, partnerName: string) => {
+    setWithdrawFor({ vaadiId, partnerId, partnerName });
+    setWithdrawForm(EMPTY_WITHDRAWAL);
+  };
+
+  const cancelWithdraw = () => {
+    setWithdrawFor(null);
+    setWithdrawForm(EMPTY_WITHDRAWAL);
+  };
+
+  const submitWithdraw = async (e: FormEvent, remaining: number) => {
+    e.preventDefault();
+    if (!withdrawFor) return;
+    if (withdrawForm.amount <= 0) {
+      showToast('Enter valid amount.', 'error');
+      return;
+    }
+    if (withdrawForm.amount > remaining) {
+      showToast(`Amount exceeds remaining payable (₹${remaining}).`, 'error');
+      return;
+    }
+    setWithdrawBusy(true);
+    try {
+      await createPartnerWithdrawal({
+        vaadiId: withdrawFor.vaadiId,
+        partnerId: withdrawFor.partnerId,
+        partnerName: withdrawFor.partnerName,
+        amount: withdrawForm.amount,
+        date: withdrawForm.date,
+        paymentMethod: withdrawForm.paymentMethod,
+        note: withdrawForm.note,
+        refId: withdrawForm.refId,
+        createdAt: Date.now(),
+      });
+      showToast('Withdrawal recorded.');
+      cancelWithdraw();
+    } catch {
+      showToast('Something went wrong. Try again.', 'error');
+    } finally {
+      setWithdrawBusy(false);
+    }
+  };
 
   return (
     <div>
@@ -187,13 +240,119 @@ export default function VaadisAdmin() {
                   {pakCount} {pakCount === 1 ? 'pak' : 'paks'} · Cost ₹{cost} · Revenue ₹{revenue} · Profit{' '}
                   <strong style={{ color: profit >= 0 ? '#2e5339' : '#c0392b' }}>₹{profit}</strong>
                 </div>
-                {partnerShares.length > 0 && (
-                  <div className="admin-card-meta">
-                    {partnerShares.map((p) => `${p.name} ${p.sharePercent}% → ₹${p.amount}`).join(' · ')}
-                  </div>
-                )}
                 {vaadi.note && <div className="admin-card-meta">{vaadi.note}</div>}
               </div>
+
+              {partnerShares.length > 0 && (
+                <div style={{ marginTop: 12, borderTop: '1px solid #e5e5e0', paddingTop: 12, display: 'grid', gap: 8 }}>
+                  {partnerShares.map((p) => (
+                    <div key={p.id}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, flexWrap: 'wrap', gap: 8 }}>
+                        <span>
+                          <strong>{p.name}</strong> ({p.sharePercent}%) — Payable ₹{p.amount} · Withdrawn ₹{p.withdrawn} · Remaining{' '}
+                          <strong style={{ color: p.remaining >= 0 ? '#2e5339' : '#c0392b' }}>₹{p.remaining}</strong>
+                        </span>
+                        <span style={{ display: 'flex', gap: 6 }}>
+                          <button type="button" className="btn btn-secondary btn-sm" onClick={() => startWithdraw(vaadi.id, p.id, p.name)}>
+                            Withdraw
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => setHistoryFor(historyFor === p.id ? null : p.id)}
+                          >
+                            {historyFor === p.id ? 'Hide History' : 'History'}
+                          </button>
+                        </span>
+                      </div>
+
+                      {withdrawFor?.partnerId === p.id && (
+                        <form
+                          onSubmit={(e) => submitWithdraw(e, p.remaining)}
+                          className="admin-form-row"
+                          style={{ marginTop: 8 }}
+                        >
+                          <label className="admin-field">
+                            Amount (₹)
+                            <input
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              value={withdrawForm.amount}
+                              onChange={(e) => setWithdrawForm({ ...withdrawForm, amount: Number(e.target.value) })}
+                              required
+                            />
+                          </label>
+                          <label className="admin-field">
+                            Date
+                            <input
+                              type="date"
+                              value={withdrawForm.date}
+                              onChange={(e) => setWithdrawForm({ ...withdrawForm, date: e.target.value })}
+                              required
+                            />
+                          </label>
+                          <label className="admin-field">
+                            Payment Method
+                            <input
+                              value={withdrawForm.paymentMethod}
+                              onChange={(e) => setWithdrawForm({ ...withdrawForm, paymentMethod: e.target.value })}
+                              placeholder="Cash, UPI, Bank…"
+                            />
+                          </label>
+                          <label className="admin-field">
+                            Ref / Txn ID (optional)
+                            <input
+                              value={withdrawForm.refId}
+                              onChange={(e) => setWithdrawForm({ ...withdrawForm, refId: e.target.value })}
+                            />
+                          </label>
+                          <label className="admin-field admin-field-wide">
+                            Note (optional)
+                            <input
+                              value={withdrawForm.note}
+                              onChange={(e) => setWithdrawForm({ ...withdrawForm, note: e.target.value })}
+                            />
+                          </label>
+                          <div className="admin-form-actions">
+                            <button type="submit" className="btn btn-primary btn-sm" disabled={withdrawBusy}>
+                              Save Withdrawal
+                            </button>
+                            <button type="button" className="btn btn-secondary btn-sm" onClick={cancelWithdraw}>
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      )}
+
+                      {historyFor === p.id && (
+                        <div style={{ marginTop: 8, display: 'grid', gap: 4 }}>
+                          {withdrawals.filter((w) => w.partnerId === p.id).length === 0 ? (
+                            <div className="admin-empty">No withdrawals yet.</div>
+                          ) : (
+                            withdrawals
+                              .filter((w) => w.partnerId === p.id)
+                              .map((w) => (
+                                <div
+                                  key={w.id}
+                                  style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '4px 0', borderBottom: '1px solid #f0f0ec' }}
+                                >
+                                  <span>
+                                    {w.date} · ₹{w.amount}
+                                    {w.paymentMethod ? ` · ${w.paymentMethod}` : ''}
+                                    {w.refId ? ` · Ref: ${w.refId}` : ''}
+                                    {w.note ? ` — ${w.note}` : ''}
+                                  </span>
+                                </div>
+                              ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div className="admin-card-actions">
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(vaadi)}>Edit</button>
                 <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(vaadi)}>Delete</button>
