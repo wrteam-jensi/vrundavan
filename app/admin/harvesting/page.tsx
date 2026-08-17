@@ -221,6 +221,17 @@ export default function HarvestingAdmin() {
       (!pendingOnly || e.pendingAmount > 0)
   );
 
+  const groupedByFarmer = useMemo(() => {
+    const map = new Map<string, { farmerId: string; farmerName: string; entries: HarvestEntry[]; pendingTotal: number }>();
+    for (const e of filtered) {
+      const g = map.get(e.farmerId) ?? { farmerId: e.farmerId, farmerName: e.farmerName, entries: [], pendingTotal: 0 };
+      g.entries.push(e);
+      g.pendingTotal = Math.round((g.pendingTotal + e.pendingAmount) * 100) / 100;
+      map.set(e.farmerId, g);
+    }
+    return Array.from(map.values());
+  }, [filtered]);
+
   const summary = useMemo(() => {
     const today = todayStr();
     const todayEntries = entries.filter((e) => e.date === today);
@@ -408,35 +419,45 @@ export default function HarvestingAdmin() {
         <SkeletonList rows={4} />
       ) : (
         <div className="admin-list">
-          {filtered.map((entry) => (
-            <div key={entry.id} className="admin-card">
-              {entry.pendingAmount > 0 && (
-                <input
-                  type="checkbox"
-                  checked={selectedIds.has(entry.id)}
-                  onChange={() => toggleSelect(entry.id)}
-                  style={{ width: 18, height: 18, flexShrink: 0 }}
-                  aria-label={t('harvesting.selectEntryAria').replace('{name}', entry.farmerName)}
-                />
-              )}
-              <div className="admin-card-body">
-                <div className="admin-card-title">
-                  {entry.farmerName} <span className="sub">{entry.date} · {entry.startTime}–{entry.endTime}</span>
-                </div>
-                <div className="admin-card-meta">
-                  {entry.hours}h × ₹{entry.ratePerHour} = ₹{entry.totalAmount}
-                  {' · '}{t('harvesting.card.advance')} ₹{entry.advanceAmount} · {t('harvesting.card.paid')} ₹{entry.paidAmount} · {t('harvesting.card.pending')}{' '}
-                  <strong style={{ color: entry.pendingAmount > 0 ? '#c0392b' : '#2e5339' }}>₹{entry.pendingAmount}</strong>
-                </div>
-                {entry.note && <div className="admin-card-meta">{entry.note}</div>}
+          {groupedByFarmer.map((g) => (
+            <div key={g.farmerId} style={{ display: 'grid', gap: 8, marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+                <strong>{g.farmerName}</strong>
+                <span className={g.pendingTotal > 0 ? 'pending-due' : 'pending-ok'}>
+                  {t('harvesting.card.pending')} <strong>₹{g.pendingTotal}</strong>
+                </span>
               </div>
-              <div className="admin-card-actions">
-                <a href={whatsAppEntryUrl(entry, entries)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
-                  {t('harvesting.sendWhatsApp')}
-                </a>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(entry)}>{t('harvesting.edit')}</button>
-                <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(entry)}>{t('harvesting.delete')}</button>
-              </div>
+              {g.entries.map((entry) => (
+                <div key={entry.id} className="admin-card">
+                  {entry.pendingAmount > 0 && (
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(entry.id)}
+                      onChange={() => toggleSelect(entry.id)}
+                      style={{ width: 18, height: 18, flexShrink: 0 }}
+                      aria-label={t('harvesting.selectEntryAria').replace('{name}', entry.farmerName)}
+                    />
+                  )}
+                  <div className="admin-card-body">
+                    <div className="admin-card-title">
+                      {entry.farmerName} <span className="sub">{entry.date} · {entry.startTime}–{entry.endTime}</span>
+                    </div>
+                    <div className="admin-card-meta">
+                      {entry.hours}h × ₹{entry.ratePerHour} = ₹{entry.totalAmount}
+                      {' · '}{t('harvesting.card.advance')} ₹{entry.advanceAmount} · {t('harvesting.card.paid')} ₹{entry.paidAmount} · {t('harvesting.card.pending')}{' '}
+                      <strong style={{ color: entry.pendingAmount > 0 ? '#c0392b' : '#2e5339' }}>₹{entry.pendingAmount}</strong>
+                    </div>
+                    {entry.note && <div className="admin-card-meta">{entry.note}</div>}
+                  </div>
+                  <div className="admin-card-actions">
+                    <a href={whatsAppEntryUrl(entry, entries)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
+                      {t('harvesting.sendWhatsApp')}
+                    </a>
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(entry)}>{t('harvesting.edit')}</button>
+                    <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(entry)}>{t('harvesting.delete')}</button>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
           {filtered.length === 0 && <div className="admin-empty">{t('harvesting.noEntriesFound')}</div>}
