@@ -3,8 +3,13 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { createVaadi, deleteVaadi, updateVaadi, useVaadis, vaadiRollup } from '@/lib/vaadis';
 import { usePaks } from '@/lib/paks';
-import { createPartnerWithdrawal, usePartnerWithdrawals } from '@/lib/partnerWithdrawals';
-import type { Vaadi, VaadiPartner } from '@/lib/types';
+import {
+  createPartnerWithdrawal,
+  deletePartnerWithdrawal,
+  updatePartnerWithdrawal,
+  usePartnerWithdrawals,
+} from '@/lib/partnerWithdrawals';
+import type { PartnerWithdrawal, Vaadi, VaadiPartner } from '@/lib/types';
 import SkeletonList from '@/components/SkeletonList';
 import { useAdminUI } from '@/components/AdminUI';
 import { useLanguage } from '@/lib/i18n';
@@ -38,7 +43,9 @@ export default function VaadisAdmin() {
   const [withdrawFor, setWithdrawFor] = useState<{ vaadiId: string; partnerId: string; partnerName: string } | null>(null);
   const [withdrawForm, setWithdrawForm] = useState(EMPTY_WITHDRAWAL);
   const [withdrawBusy, setWithdrawBusy] = useState(false);
+  const [editWithdrawId, setEditWithdrawId] = useState<string | null>(null);
   const [historyFor, setHistoryFor] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   const partnerTotal = Math.round(form.partners.reduce((s, p) => s + p.sharePercent, 0) * 100) / 100;
 
@@ -135,14 +142,37 @@ export default function VaadisAdmin() {
     });
   }, [vaadis, paks, withdrawnByVaadiPartner]);
 
+  const filteredRollups = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rollups;
+    return rollups.filter(
+      ({ vaadi, partnerShares }) =>
+        vaadi.name.toLowerCase().includes(q) || partnerShares.some((p) => p.name.toLowerCase().includes(q))
+    );
+  }, [rollups, search]);
+
   const startWithdraw = (vaadiId: string, partnerId: string, partnerName: string) => {
     setWithdrawFor({ vaadiId, partnerId, partnerName });
     setWithdrawForm(EMPTY_WITHDRAWAL);
+    setEditWithdrawId(null);
+  };
+
+  const startEditWithdraw = (w: PartnerWithdrawal) => {
+    setWithdrawFor({ vaadiId: w.vaadiId, partnerId: w.partnerId, partnerName: w.partnerName });
+    setWithdrawForm({
+      amount: w.amount,
+      date: w.date,
+      paymentMethod: w.paymentMethod,
+      note: w.note,
+      refId: w.refId,
+    });
+    setEditWithdrawId(w.id);
   };
 
   const cancelWithdraw = () => {
     setWithdrawFor(null);
     setWithdrawForm(EMPTY_WITHDRAWAL);
+    setEditWithdrawId(null);
   };
 
   const submitWithdraw = async (e: FormEvent, remaining: number) => {
@@ -158,24 +188,54 @@ export default function VaadisAdmin() {
     }
     setWithdrawBusy(true);
     try {
-      await createPartnerWithdrawal({
-        vaadiId: withdrawFor.vaadiId,
-        partnerId: withdrawFor.partnerId,
-        partnerName: withdrawFor.partnerName,
-        amount: withdrawForm.amount,
-        date: withdrawForm.date,
-        paymentMethod: withdrawForm.paymentMethod,
-        note: withdrawForm.note,
-        refId: withdrawForm.refId,
-        createdAt: Date.now(),
-      });
-      showToast(t('vaadis.toast.withdrawalRecorded'));
+      if (editWithdrawId) {
+        await updatePartnerWithdrawal(editWithdrawId, {
+          vaadiId: withdrawFor.vaadiId,
+          partnerId: withdrawFor.partnerId,
+          partnerName: withdrawFor.partnerName,
+          amount: withdrawForm.amount,
+          date: withdrawForm.date,
+          paymentMethod: withdrawForm.paymentMethod,
+          note: withdrawForm.note,
+          refId: withdrawForm.refId,
+          createdAt: withdrawals.find((w) => w.id === editWithdrawId)?.createdAt ?? Date.now(),
+        });
+        showToast(t('vaadis.toast.withdrawalUpdated'));
+      } else {
+        await createPartnerWithdrawal({
+          vaadiId: withdrawFor.vaadiId,
+          partnerId: withdrawFor.partnerId,
+          partnerName: withdrawFor.partnerName,
+          amount: withdrawForm.amount,
+          date: withdrawForm.date,
+          paymentMethod: withdrawForm.paymentMethod,
+          note: withdrawForm.note,
+          refId: withdrawForm.refId,
+          createdAt: Date.now(),
+        });
+        showToast(t('vaadis.toast.withdrawalRecorded'));
+      }
       cancelWithdraw();
     } catch {
       showToast(t('vaadis.toast.error'), 'error');
     } finally {
       setWithdrawBusy(false);
     }
+  };
+
+  const onDeleteWithdraw = async (w: PartnerWithdrawal) => {
+    if (!(await confirm(t('vaadis.confirm.deleteWithdrawal')))) return;
+    await deletePartnerWithdrawal(w.id);
+    showToast(t('vaadis.toast.withdrawalDeleted'), {
+      action: {
+        label: t('vaadis.action.undo'),
+        onClick: async () => {
+          const { id, ...data } = w;
+          await createPartnerWithdrawal(data);
+          showToast(t('vaadis.toast.withdrawalRestored'));
+        },
+      },
+    });
   };
 
   return (
@@ -233,11 +293,15 @@ export default function VaadisAdmin() {
         </div>
       </form>
 
+      <div className="admin-filters">
+        <input placeholder={t('vaadis.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.target.value)} />
+      </div>
+
       {loading ? (
         <SkeletonList rows={3} />
       ) : (
         <div className="admin-list">
-          {rollups.map(({ vaadi, pakCount, cost, revenue, profit, partnerShares }) => (
+          {filteredRollups.map(({ vaadi, pakCount, cost, revenue, profit, partnerShares }) => (
             <div key={vaadi.id} className="admin-card" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
               <div className="admin-card-body">
                 <div className="admin-card-title">{vaadi.name}</div>
@@ -273,7 +337,14 @@ export default function VaadisAdmin() {
 
                       {withdrawFor?.partnerId === p.id && (
                         <form
-                          onSubmit={(e) => submitWithdraw(e, p.remaining)}
+                          onSubmit={(e) =>
+                            submitWithdraw(
+                              e,
+                              editWithdrawId
+                                ? Math.round((p.remaining + (withdrawals.find((w) => w.id === editWithdrawId)?.amount ?? 0)) * 100) / 100
+                                : p.remaining
+                            )
+                          }
                           className="admin-form-row"
                           style={{ marginTop: 8 }}
                         >
@@ -321,7 +392,7 @@ export default function VaadisAdmin() {
                           </label>
                           <div className="admin-form-actions">
                             <button type="submit" className="btn btn-primary btn-sm" disabled={withdrawBusy}>
-                              {t('vaadis.action.saveWithdrawal')}
+                              {editWithdrawId ? t('vaadis.action.updateWithdrawal') : t('vaadis.action.saveWithdrawal')}
                             </button>
                             <button type="button" className="btn btn-secondary btn-sm" onClick={cancelWithdraw}>
                               {t('vaadis.action.cancel')}
@@ -340,13 +411,21 @@ export default function VaadisAdmin() {
                               .map((w) => (
                                 <div
                                   key={w.id}
-                                  style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, padding: '4px 0', borderBottom: '1px solid #f0f0ec' }}
+                                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, padding: '4px 0', borderBottom: '1px solid #f0f0ec', gap: 8 }}
                                 >
                                   <span>
                                     {w.date} · ₹{w.amount}
                                     {w.paymentMethod ? ` · ${w.paymentMethod}` : ''}
                                     {w.refId ? ` · ${t('vaadis.label.ref')} ${w.refId}` : ''}
                                     {w.note ? ` — ${w.note}` : ''}
+                                  </span>
+                                  <span style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEditWithdraw(w)}>
+                                      {t('vaadis.action.edit')}
+                                    </button>
+                                    <button type="button" className="btn btn-danger btn-sm" onClick={() => onDeleteWithdraw(w)}>
+                                      {t('vaadis.action.delete')}
+                                    </button>
                                   </span>
                                 </div>
                               ))
@@ -364,7 +443,7 @@ export default function VaadisAdmin() {
               </div>
             </div>
           ))}
-          {rollups.length === 0 && <div className="admin-empty">{t('vaadis.empty.noVaadis')}</div>}
+          {filteredRollups.length === 0 && <div className="admin-empty">{t('vaadis.empty.noVaadis')}</div>}
         </div>
       )}
     </div>

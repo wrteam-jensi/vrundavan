@@ -1,4 +1,4 @@
-import { addDoc, collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { db } from './firebase';
 import type { PartnerWithdrawal } from './types';
@@ -20,4 +20,12 @@ export function usePartnerWithdrawals() {
 
 export async function createPartnerWithdrawal(data: Omit<PartnerWithdrawal, 'id'>) {
   await addDoc(collection(db, 'partnerWithdrawals'), data);
+}
+
+export async function updatePartnerWithdrawal(id: string, data: Omit<PartnerWithdrawal, 'id'>) {
+  await updateDoc(doc(db, 'partnerWithdrawals', id), data);
+}
+
+export async function deletePartnerWithdrawal(id: string) {
+  await deleteDoc(doc(db, 'partnerWithdrawals', id));
 }
