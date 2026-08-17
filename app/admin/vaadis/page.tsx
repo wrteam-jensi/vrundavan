@@ -112,9 +112,12 @@ export default function VaadisAdmin() {
     });
   };
 
-  const withdrawnByPartner = useMemo(() => {
+  const withdrawnByVaadiPartner = useMemo(() => {
     const map = new Map<string, number>();
-    for (const w of withdrawals) map.set(w.partnerId, (map.get(w.partnerId) ?? 0) + w.amount);
+    for (const w of withdrawals) {
+      const key = `${w.vaadiId}::${w.partnerId}`;
+      map.set(key, (map.get(key) ?? 0) + w.amount);
+    }
     return map;
   }, [withdrawals]);
 
@@ -122,13 +125,13 @@ export default function VaadisAdmin() {
     return vaadis.map((vaadi) => {
       const { pakCount, cost, revenue, profit, partnerShares } = vaadiRollup(vaadi, paks);
       const partnerBalances = partnerShares.map((p) => {
-        const withdrawn = Math.round((withdrawnByPartner.get(p.id) ?? 0) * 100) / 100;
+        const withdrawn = Math.round((withdrawnByVaadiPartner.get(`${vaadi.id}::${p.id}`) ?? 0) * 100) / 100;
         const remaining = Math.round((p.amount - withdrawn) * 100) / 100;
         return { ...p, withdrawn, remaining };
       });
       return { vaadi, pakCount, cost, revenue, profit, partnerShares: partnerBalances };
     });
-  }, [vaadis, paks, withdrawnByPartner]);
+  }, [vaadis, paks, withdrawnByVaadiPartner]);
 
   const startWithdraw = (vaadiId: string, partnerId: string, partnerName: string) => {
     setWithdrawFor({ vaadiId, partnerId, partnerName });
@@ -327,11 +330,11 @@ export default function VaadisAdmin() {
 
                       {historyFor === p.id && (
                         <div style={{ marginTop: 8, display: 'grid', gap: 4 }}>
-                          {withdrawals.filter((w) => w.partnerId === p.id).length === 0 ? (
+                          {withdrawals.filter((w) => w.vaadiId === vaadi.id && w.partnerId === p.id).length === 0 ? (
                             <div className="admin-empty">No withdrawals yet.</div>
                           ) : (
                             withdrawals
-                              .filter((w) => w.partnerId === p.id)
+                              .filter((w) => w.vaadiId === vaadi.id && w.partnerId === p.id)
                               .map((w) => (
                                 <div
                                   key={w.id}
