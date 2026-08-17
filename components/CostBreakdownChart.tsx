@@ -2,23 +2,28 @@
 
 import { useMemo } from 'react';
 import type { FarmCropEntry } from '@/lib/types';
+import { useLanguage, type DictKey } from '@/lib/i18n';
 
-const CATEGORIES: { key: keyof FarmCropEntry; label: string; color: string }[] = [
-  { key: 'costSeed', label: 'Seed', color: '#1d6fa5' },
-  { key: 'costFertilizer', label: 'Khatar', color: '#c9852a' },
-  { key: 'costPesticide', label: 'Dava', color: '#3f8f5f' },
-  { key: 'costLabor', label: 'Majoor', color: '#a34a9c' },
-  { key: 'costFuel', label: 'Fuel', color: '#c0392b' },
-  { key: 'costOther', label: 'Other', color: '#3d5c99' },
+const CATEGORY_META: { key: keyof FarmCropEntry; labelKey: DictKey; color: string }[] = [
+  { key: 'costSeed', labelKey: 'costBreakdown.category.seed', color: '#1d6fa5' },
+  { key: 'costFertilizer', labelKey: 'costBreakdown.category.fertilizer', color: '#c9852a' },
+  { key: 'costPesticide', labelKey: 'costBreakdown.category.pesticide', color: '#3f8f5f' },
+  { key: 'costLabor', labelKey: 'costBreakdown.category.labor', color: '#a34a9c' },
+  { key: 'costFuel', labelKey: 'costBreakdown.category.fuel', color: '#c0392b' },
+  { key: 'costOther', labelKey: 'costBreakdown.category.other', color: '#3d5c99' },
 ];
 
 export default function CostBreakdownChart({ entries }: { entries: FarmCropEntry[] }) {
+  const { t } = useLanguage();
+  const CATEGORIES = CATEGORY_META.map((c) => ({ ...c, label: t(c.labelKey) }));
+
   const totals = useMemo(() => {
     return CATEGORIES.map((c) => ({
       ...c,
       total: Math.round(entries.reduce((s, e) => s + ((e[c.key] as number) ?? 0), 0) * 100) / 100,
     }));
-  }, [entries]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entries, t]);
 
   const grandTotal = totals.reduce((s, c) => s + c.total, 0);
 
@@ -28,7 +33,7 @@ export default function CostBreakdownChart({ entries }: { entries: FarmCropEntry
 
   return (
     <div className="admin-form" style={{ marginBottom: 20 }}>
-      <div className="admin-page-title" style={{ fontSize: 16, marginBottom: 4 }}>Cost Breakdown (Kharch)</div>
+      <div className="admin-page-title" style={{ fontSize: 16, marginBottom: 4 }}>{t('costBreakdown.title')}</div>
       <div style={{ display: 'grid', gap: 10, marginTop: 8 }}>
         {totals
           .filter((c) => c.total > 0)
