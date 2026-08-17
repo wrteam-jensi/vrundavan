@@ -5,10 +5,12 @@ import { useCollection } from '@/lib/useCollection';
 import { createDoc, deleteDocById, deleteImage, updateDocById, uploadImage } from '@/lib/crud';
 import { CROPS_DEFAULT, FRUITS_DEFAULT } from '@/lib/defaults';
 import type { CropFruitItem } from '@/lib/types';
+import { useLanguage } from '@/lib/i18n';
 
 const EMPTY = { emoji: '', name: '', local: '', desc: '' };
 
 export default function CropFruitAdmin({ collectionName, title }: { collectionName: 'crops' | 'fruits'; title: string }) {
+  const { t } = useLanguage();
   const { items, loading } = useCollection<CropFruitItem>(collectionName);
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -71,7 +73,7 @@ export default function CropFruitAdmin({ collectionName, title }: { collectionNa
   };
 
   const onDelete = async (item: CropFruitItem) => {
-    if (!confirm('Delete this item?')) return;
+    if (!confirm(t('cropFruit.confirmDelete'))) return;
     await deleteDocById(collectionName, item.id);
     if (item.imagePath) await deleteImage(item.imagePath);
   };
@@ -82,22 +84,22 @@ export default function CropFruitAdmin({ collectionName, title }: { collectionNa
 
       <form onSubmit={onSubmit} style={{ background: '#fff', padding: 20, borderRadius: 10, marginBottom: 24, display: 'grid', gap: 10 }}>
         <div style={{ display: 'flex', gap: 10 }}>
-          <input placeholder="Emoji" value={form.emoji} onChange={(e) => setForm({ ...form, emoji: e.target.value })} required style={{ width: 60, padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
-          <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required style={{ flex: 1, padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
-          <input placeholder="Local name" value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })} required style={{ width: 140, padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
+          <input placeholder={t('cropFruit.placeholder.emoji')} value={form.emoji} onChange={(e) => setForm({ ...form, emoji: e.target.value })} required style={{ width: 60, padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
+          <input placeholder={t('cropFruit.placeholder.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required style={{ flex: 1, padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
+          <input placeholder={t('cropFruit.placeholder.localName')} value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })} required style={{ width: 140, padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
         </div>
-        <textarea placeholder="Description" value={form.desc} onChange={(e) => setForm({ ...form, desc: e.target.value })} required rows={2} style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6, fontFamily: 'inherit' }} />
+        <textarea placeholder={t('cropFruit.placeholder.description')} value={form.desc} onChange={(e) => setForm({ ...form, desc: e.target.value })} required rows={2} style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6, fontFamily: 'inherit' }} />
         <div>
           <input ref={fileInput} type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-          {existingImage && !file && <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>Current image set — choose a file to replace it.</div>}
+          {existingImage && !file && <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{t('cropFruit.currentImageSet')}</div>}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button type="submit" disabled={busy} style={{ padding: '8px 16px', background: '#2e5339', color: '#fff', border: 0, borderRadius: 6, cursor: 'pointer' }}>
-            {busy ? 'Saving…' : editingId ? 'Update' : 'Add'}
+            {busy ? t('cropFruit.saving') : editingId ? t('cropFruit.update') : t('cropFruit.add')}
           </button>
           {editingId && (
             <button type="button" onClick={cancelEdit} style={{ padding: '8px 16px', background: '#fff', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer' }}>
-              Cancel
+              {t('cropFruit.cancel')}
             </button>
           )}
         </div>
@@ -105,12 +107,12 @@ export default function CropFruitAdmin({ collectionName, title }: { collectionNa
 
       {!loading && items.length === 0 && (
         <button type="button" onClick={seedDefaults} disabled={seeding} style={{ marginBottom: 16, padding: '8px 16px', background: '#fff', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer' }}>
-          {seeding ? 'Seeding…' : `Seed default ${title.toLowerCase()}`}
+          {seeding ? t('cropFruit.seeding') : t('cropFruit.seedDefaults').replace('{title}', title.toLowerCase())}
         </button>
       )}
 
       {loading ? (
-        <p>Loading…</p>
+        <p>{t('cropFruit.loading')}</p>
       ) : (
         <div style={{ display: 'grid', gap: 10 }}>
           {items.map((item) => (
@@ -125,8 +127,8 @@ export default function CropFruitAdmin({ collectionName, title }: { collectionNa
                 <div style={{ fontWeight: 600 }}>{item.name} <span style={{ fontWeight: 400, color: '#888', fontSize: 12 }}>({item.local})</span></div>
                 <div style={{ fontSize: 13, color: '#666' }}>{item.desc}</div>
               </div>
-              <button type="button" onClick={() => startEdit(item)} style={{ padding: '6px 12px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>Edit</button>
-              <button type="button" onClick={() => onDelete(item)} style={{ padding: '6px 12px', border: '1px solid #f0c4c4', color: '#c0392b', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>Delete</button>
+              <button type="button" onClick={() => startEdit(item)} style={{ padding: '6px 12px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>{t('cropFruit.edit')}</button>
+              <button type="button" onClick={() => onDelete(item)} style={{ padding: '6px 12px', border: '1px solid #f0c4c4', color: '#c0392b', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>{t('cropFruit.delete')}</button>
             </div>
           ))}
         </div>

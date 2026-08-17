@@ -5,11 +5,13 @@ import { createFarmer, deleteFarmer, updateFarmer, useFarmers, useHarvestEntries
 import type { Farmer } from '@/lib/types';
 import SkeletonList from '@/components/SkeletonList';
 import { useAdminUI } from '@/components/AdminUI';
+import { useLanguage } from '@/lib/i18n';
 import '../admin.css';
 
 const EMPTY = { name: '', mobile: '', village: '', farmDetails: '' };
 
 export default function FarmersAdmin() {
+  const { t } = useLanguage();
   const { showToast, confirm } = useAdminUI();
   const { farmers, loading } = useFarmers();
   const { entries } = useHarvestEntries();
@@ -41,29 +43,29 @@ export default function FarmersAdmin() {
     try {
       if (editingId) {
         await updateFarmer(editingId, form);
-        showToast('Farmer updated.');
+        showToast(t('farmers.toast.updated'));
       } else {
         await createFarmer(form);
-        showToast('Farmer added.');
+        showToast(t('farmers.toast.added'));
       }
       cancelEdit();
     } catch {
-      showToast('Something went wrong. Try again.', 'error');
+      showToast(t('farmers.toast.error'), 'error');
     } finally {
       setBusy(false);
     }
   };
 
   const onDelete = async (farmer: Farmer) => {
-    if (!(await confirm(`Delete ${farmer.name}? Their harvesting history will remain but no longer link to a farmer record.`))) return;
+    if (!(await confirm(`${t('farmers.deleteConfirmPrefix')} ${farmer.name}${t('farmers.deleteConfirmSuffix')}`))) return;
     const { id, ...data } = farmer;
     await deleteFarmer(id);
-    showToast('Farmer deleted.', {
+    showToast(t('farmers.toast.deleted'), {
       action: {
-        label: 'Undo',
+        label: t('farmers.undo'),
         onClick: async () => {
           await createFarmer(data);
-          showToast('Farmer restored.');
+          showToast(t('farmers.toast.restored'));
         },
       },
     });
@@ -85,44 +87,44 @@ export default function FarmersAdmin() {
 
   return (
     <div>
-      <h1 className="admin-page-title">Farmers</h1>
+      <h1 className="admin-page-title">{t('farmers.title')}</h1>
 
       <form onSubmit={onSubmit} className="admin-form">
         <div className="admin-form-row">
           <label className="admin-field">
-            Name
+            {t('farmers.field.name')}
             <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </label>
           <label className="admin-field">
-            Mobile (WhatsApp)
+            {t('farmers.field.mobile')}
             <input value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} required />
           </label>
           <label className="admin-field">
-            Village
+            {t('farmers.field.village')}
             <input value={form.village} onChange={(e) => setForm({ ...form, village: e.target.value })} required />
           </label>
         </div>
         <label className="admin-field admin-field-wide">
-          Farm details
+          {t('farmers.field.farmDetails')}
           <textarea value={form.farmDetails} onChange={(e) => setForm({ ...form, farmDetails: e.target.value })} rows={2} />
         </label>
         <div className="admin-form-actions">
           <button type="submit" className="btn btn-primary" disabled={busy}>
-            {editingId ? 'Update' : 'Add Farmer'}
+            {editingId ? t('farmers.update') : t('farmers.addFarmer')}
           </button>
           {editingId && (
             <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
-              Cancel
+              {t('farmers.cancel')}
             </button>
           )}
         </div>
       </form>
 
       <div className="admin-filters">
-        <input placeholder="Search by name or village…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input placeholder={t('farmers.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.target.value)} />
         <select value={sortBy} onChange={(e) => setSortBy(e.target.value as 'name' | 'pending')}>
-          <option value="name">Sort: Name</option>
-          <option value="pending">Sort: Pending Amount</option>
+          <option value="name">{t('farmers.sortName')}</option>
+          <option value="pending">{t('farmers.sortPending')}</option>
         </select>
       </div>
 
@@ -141,24 +143,24 @@ export default function FarmersAdmin() {
                   <div className="admin-card-meta">{f.mobile}{f.farmDetails ? ` — ${f.farmDetails}` : ''}</div>
                   {pending > 0 && (
                     <div className="admin-card-meta">
-                      Pending: <strong style={{ color: '#c0392b' }}>₹{Math.round(pending * 100) / 100}</strong>
+                      {t('farmers.pending')}: <strong style={{ color: '#c0392b' }}>₹{Math.round(pending * 100) / 100}</strong>
                     </div>
                   )}
                 </div>
                 <div className="admin-card-actions">
                   {pending > 0 && (
                     <a href={whatsAppPendingUrl(f, entries)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
-                      Send Pending
+                      {t('farmers.sendPending')}
                     </a>
                   )}
-                  <a href={`/admin/farmers/${f.id}`} className="btn btn-secondary btn-sm">View</a>
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(f)}>Edit</button>
-                  <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(f)}>Delete</button>
+                  <a href={`/admin/farmers/${f.id}`} className="btn btn-secondary btn-sm">{t('farmers.view')}</a>
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(f)}>{t('farmers.edit')}</button>
+                  <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(f)}>{t('farmers.delete')}</button>
                 </div>
               </div>
             );
           })}
-          {visibleFarmers.length === 0 && <div className="admin-empty">No farmers found.</div>}
+          {visibleFarmers.length === 0 && <div className="admin-empty">{t('farmers.empty')}</div>}
         </div>
       )}
     </div>

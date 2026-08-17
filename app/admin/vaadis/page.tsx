@@ -7,6 +7,7 @@ import { createPartnerWithdrawal, usePartnerWithdrawals } from '@/lib/partnerWit
 import type { Vaadi, VaadiPartner } from '@/lib/types';
 import SkeletonList from '@/components/SkeletonList';
 import { useAdminUI } from '@/components/AdminUI';
+import { useLanguage } from '@/lib/i18n';
 import '../admin.css';
 
 const EMPTY_PARTNER: VaadiPartner = { id: '', name: '', sharePercent: 0 };
@@ -26,6 +27,7 @@ const EMPTY_VAADI = {
 };
 
 export default function VaadisAdmin() {
+  const { t } = useLanguage();
   const { showToast, confirm } = useAdminUI();
   const { vaadis, loading } = useVaadis();
   const { paks } = usePaks();
@@ -80,33 +82,33 @@ export default function VaadisAdmin() {
         createdAt: editingId ? (vaadis.find((v) => v.id === editingId)?.createdAt ?? Date.now()) : Date.now(),
       };
       if (partnerTotal !== 100 && partners.length) {
-        showToast(`Partner shares total ${partnerTotal}%, not 100%. Saved anyway — you can fix later.`, 'error');
+        showToast(t('vaadis.toast.shareTotalMismatch').replace('{percent}', String(partnerTotal)), 'error');
       }
       if (editingId) {
         await updateVaadi(editingId, data);
-        showToast('Vaadi updated.');
+        showToast(t('vaadis.toast.updated'));
       } else {
         await createVaadi(data);
-        showToast('Vaadi added.');
+        showToast(t('vaadis.toast.added'));
       }
       cancelEdit();
     } catch {
-      showToast('Something went wrong. Try again.', 'error');
+      showToast(t('vaadis.toast.error'), 'error');
     } finally {
       setBusy(false);
     }
   };
 
   const onDelete = async (vaadi: Vaadi) => {
-    if (!(await confirm(`Delete vaadi "${vaadi.name}"? Paks linked to it will keep showing it as unassigned.`))) return;
+    if (!(await confirm(t('vaadis.confirm.delete').replace('{name}', vaadi.name)))) return;
     const { id, ...data } = vaadi;
     await deleteVaadi(id);
-    showToast('Vaadi deleted.', {
+    showToast(t('vaadis.toast.deleted'), {
       action: {
-        label: 'Undo',
+        label: t('vaadis.action.undo'),
         onClick: async () => {
           await createVaadi(data);
-          showToast('Vaadi restored.');
+          showToast(t('vaadis.toast.restored'));
         },
       },
     });
@@ -147,11 +149,11 @@ export default function VaadisAdmin() {
     e.preventDefault();
     if (!withdrawFor) return;
     if (withdrawForm.amount <= 0) {
-      showToast('Enter valid amount.', 'error');
+      showToast(t('vaadis.toast.invalidAmount'), 'error');
       return;
     }
     if (withdrawForm.amount > remaining) {
-      showToast(`Amount exceeds remaining payable (₹${remaining}).`, 'error');
+      showToast(t('vaadis.toast.amountExceedsRemaining').replace('{amount}', String(remaining)), 'error');
       return;
     }
     setWithdrawBusy(true);
@@ -167,10 +169,10 @@ export default function VaadisAdmin() {
         refId: withdrawForm.refId,
         createdAt: Date.now(),
       });
-      showToast('Withdrawal recorded.');
+      showToast(t('vaadis.toast.withdrawalRecorded'));
       cancelWithdraw();
     } catch {
-      showToast('Something went wrong. Try again.', 'error');
+      showToast(t('vaadis.toast.error'), 'error');
     } finally {
       setWithdrawBusy(false);
     }
@@ -178,54 +180,54 @@ export default function VaadisAdmin() {
 
   return (
     <div>
-      <h1 className="admin-page-title">Vaadis &amp; Partners</h1>
+      <h1 className="admin-page-title">{t('vaadis.title')}</h1>
 
       <form onSubmit={onSubmit} className="admin-form">
         <div className="admin-form-row">
           <label className="admin-field">
-            Vaadi Name
-            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder="e.g. North Field" />
+            {t('vaadis.field.vaadiName')}
+            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder={t('vaadis.placeholder.vaadiName')} />
           </label>
         </div>
 
         <div className="admin-cost-breakdown-label">
-          Partners (share %) {partnerTotal !== 100 && <span style={{ color: '#c0392b' }}>— total {partnerTotal}%</span>}
+          {t('vaadis.field.partnersShare')} {partnerTotal !== 100 && <span style={{ color: '#c0392b' }}>— {t('vaadis.field.total').replace('{percent}', String(partnerTotal))}</span>}
         </div>
         {form.partners.map((p, i) => (
           <div className="admin-form-row" key={i}>
             <label className="admin-field">
-              Name
-              <input value={p.name} onChange={(e) => updatePartner(i, 'name', e.target.value)} placeholder="Partner name" />
+              {t('vaadis.field.name')}
+              <input value={p.name} onChange={(e) => updatePartner(i, 'name', e.target.value)} placeholder={t('vaadis.placeholder.partnerName')} />
             </label>
             <label className="admin-field">
-              Share %
+              {t('vaadis.field.sharePercent')}
               <input type="number" min={0} max={100} step="0.01" value={p.sharePercent} onChange={(e) => updatePartner(i, 'sharePercent', e.target.value)} />
             </label>
             {form.partners.length > 1 && (
               <button type="button" className="btn btn-danger btn-sm" onClick={() => removePartnerRow(i)} style={{ alignSelf: 'flex-end' }}>
-                Remove
+                {t('vaadis.action.remove')}
               </button>
             )}
           </div>
         ))}
         <div className="admin-form-actions">
           <button type="button" className="btn btn-secondary btn-sm" onClick={addPartnerRow}>
-            + Add Partner
+            {t('vaadis.action.addPartner')}
           </button>
         </div>
 
         <label className="admin-field admin-field-wide">
-          Note (optional)
+          {t('vaadis.field.noteOptional')}
           <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
         </label>
 
         <div className="admin-form-actions">
           <button type="submit" className="btn btn-primary" disabled={busy}>
-            {editingId ? 'Update Vaadi' : 'Add Vaadi'}
+            {editingId ? t('vaadis.action.updateVaadi') : t('vaadis.action.addVaadi')}
           </button>
           {editingId && (
             <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
-              Cancel
+              {t('vaadis.action.cancel')}
             </button>
           )}
         </div>
@@ -240,7 +242,7 @@ export default function VaadisAdmin() {
               <div className="admin-card-body">
                 <div className="admin-card-title">{vaadi.name}</div>
                 <div className="admin-card-meta">
-                  {pakCount} {pakCount === 1 ? 'pak' : 'paks'} · Cost ₹{cost} · Revenue ₹{revenue} · Profit{' '}
+                  {pakCount} {pakCount === 1 ? t('vaadis.unit.pak') : t('vaadis.unit.paks')} · {t('vaadis.label.cost')} ₹{cost} · {t('vaadis.label.revenue')} ₹{revenue} · {t('vaadis.label.profit')}{' '}
                   <strong style={{ color: profit >= 0 ? '#2e5339' : '#c0392b' }}>₹{profit}</strong>
                 </div>
                 {vaadi.note && <div className="admin-card-meta">{vaadi.note}</div>}
@@ -252,19 +254,19 @@ export default function VaadisAdmin() {
                     <div key={p.id}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, flexWrap: 'wrap', gap: 8 }}>
                         <span>
-                          <strong>{p.name}</strong> ({p.sharePercent}%) — Payable ₹{p.amount} · Withdrawn ₹{p.withdrawn} · Remaining{' '}
+                          <strong>{p.name}</strong> ({p.sharePercent}%) — {t('vaadis.label.payable')} ₹{p.amount} · {t('vaadis.label.withdrawn')} ₹{p.withdrawn} · {t('vaadis.label.remaining')}{' '}
                           <strong style={{ color: p.remaining >= 0 ? '#2e5339' : '#c0392b' }}>₹{p.remaining}</strong>
                         </span>
                         <span style={{ display: 'flex', gap: 6 }}>
                           <button type="button" className="btn btn-secondary btn-sm" onClick={() => startWithdraw(vaadi.id, p.id, p.name)}>
-                            Withdraw
+                            {t('vaadis.action.withdraw')}
                           </button>
                           <button
                             type="button"
                             className="btn btn-secondary btn-sm"
                             onClick={() => setHistoryFor(historyFor === p.id ? null : p.id)}
                           >
-                            {historyFor === p.id ? 'Hide History' : 'History'}
+                            {historyFor === p.id ? t('vaadis.action.hideHistory') : t('vaadis.action.history')}
                           </button>
                         </span>
                       </div>
@@ -276,7 +278,7 @@ export default function VaadisAdmin() {
                           style={{ marginTop: 8 }}
                         >
                           <label className="admin-field">
-                            Amount (₹)
+                            {t('vaadis.field.amount')}
                             <input
                               type="number"
                               min={0}
@@ -287,7 +289,7 @@ export default function VaadisAdmin() {
                             />
                           </label>
                           <label className="admin-field">
-                            Date
+                            {t('vaadis.field.date')}
                             <input
                               type="date"
                               value={withdrawForm.date}
@@ -296,22 +298,22 @@ export default function VaadisAdmin() {
                             />
                           </label>
                           <label className="admin-field">
-                            Payment Method
+                            {t('vaadis.field.paymentMethod')}
                             <input
                               value={withdrawForm.paymentMethod}
                               onChange={(e) => setWithdrawForm({ ...withdrawForm, paymentMethod: e.target.value })}
-                              placeholder="Cash, UPI, Bank…"
+                              placeholder={t('vaadis.placeholder.paymentMethod')}
                             />
                           </label>
                           <label className="admin-field">
-                            Ref / Txn ID (optional)
+                            {t('vaadis.field.refIdOptional')}
                             <input
                               value={withdrawForm.refId}
                               onChange={(e) => setWithdrawForm({ ...withdrawForm, refId: e.target.value })}
                             />
                           </label>
                           <label className="admin-field admin-field-wide">
-                            Note (optional)
+                            {t('vaadis.field.noteOptional')}
                             <input
                               value={withdrawForm.note}
                               onChange={(e) => setWithdrawForm({ ...withdrawForm, note: e.target.value })}
@@ -319,10 +321,10 @@ export default function VaadisAdmin() {
                           </label>
                           <div className="admin-form-actions">
                             <button type="submit" className="btn btn-primary btn-sm" disabled={withdrawBusy}>
-                              Save Withdrawal
+                              {t('vaadis.action.saveWithdrawal')}
                             </button>
                             <button type="button" className="btn btn-secondary btn-sm" onClick={cancelWithdraw}>
-                              Cancel
+                              {t('vaadis.action.cancel')}
                             </button>
                           </div>
                         </form>
@@ -331,7 +333,7 @@ export default function VaadisAdmin() {
                       {historyFor === p.id && (
                         <div style={{ marginTop: 8, display: 'grid', gap: 4 }}>
                           {withdrawals.filter((w) => w.vaadiId === vaadi.id && w.partnerId === p.id).length === 0 ? (
-                            <div className="admin-empty">No withdrawals yet.</div>
+                            <div className="admin-empty">{t('vaadis.empty.noWithdrawals')}</div>
                           ) : (
                             withdrawals
                               .filter((w) => w.vaadiId === vaadi.id && w.partnerId === p.id)
@@ -343,7 +345,7 @@ export default function VaadisAdmin() {
                                   <span>
                                     {w.date} · ₹{w.amount}
                                     {w.paymentMethod ? ` · ${w.paymentMethod}` : ''}
-                                    {w.refId ? ` · Ref: ${w.refId}` : ''}
+                                    {w.refId ? ` · ${t('vaadis.label.ref')} ${w.refId}` : ''}
                                     {w.note ? ` — ${w.note}` : ''}
                                   </span>
                                 </div>
@@ -357,12 +359,12 @@ export default function VaadisAdmin() {
               )}
 
               <div className="admin-card-actions">
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(vaadi)}>Edit</button>
-                <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(vaadi)}>Delete</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(vaadi)}>{t('vaadis.action.edit')}</button>
+                <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(vaadi)}>{t('vaadis.action.delete')}</button>
               </div>
             </div>
           ))}
-          {rollups.length === 0 && <div className="admin-empty">No vaadis found.</div>}
+          {rollups.length === 0 && <div className="admin-empty">{t('vaadis.empty.noVaadis')}</div>}
         </div>
       )}
     </div>

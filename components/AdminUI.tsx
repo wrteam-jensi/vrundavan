@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
+import { useLanguage } from '@/lib/i18n';
 
 type Toast = { id: number; message: string; kind: 'success' | 'error'; action?: { label: string; onClick: () => void } };
 type ConfirmState = { message: string; resolve: (ok: boolean) => void } | null;
@@ -19,6 +20,7 @@ interface AdminUIContextValue {
 const AdminUIContext = createContext<AdminUIContextValue | null>(null);
 
 export function AdminUIProvider({ children }: { children: ReactNode }) {
+  const { t: translate } = useLanguage();
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [confirmState, setConfirmState] = useState<ConfirmState>(null);
   const idRef = useRef(0);
@@ -73,10 +75,10 @@ export function AdminUIProvider({ children }: { children: ReactNode }) {
             <div className="admin-confirm-message">{confirmState.message}</div>
             <div className="admin-confirm-actions">
               <button type="button" className="btn btn-secondary btn-sm" onClick={() => onConfirmChoice(false)}>
-                Cancel
+                {translate('adminUI.cancel')}
               </button>
               <button type="button" className="btn btn-danger btn-sm" onClick={() => onConfirmChoice(true)}>
-                Delete
+                {translate('adminUI.delete')}
               </button>
             </div>
           </div>

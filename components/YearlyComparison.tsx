@@ -2,11 +2,13 @@
 
 import { useMemo } from 'react';
 import type { FarmCropEntry } from '@/lib/types';
+import { useLanguage } from '@/lib/i18n';
 
 const THIS_YEAR_COLOR = '#1d6fa5';
 const LAST_YEAR_COLOR = '#c9852a';
 
 export default function YearlyComparison({ entries }: { entries: FarmCropEntry[] }) {
+  const { t } = useLanguage();
   const thisYear = new Date().getFullYear();
   const lastYear = thisYear - 1;
 
@@ -33,7 +35,7 @@ export default function YearlyComparison({ entries }: { entries: FarmCropEntry[]
     <div className="admin-form" style={{ marginBottom: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
         <div className="admin-page-title" style={{ fontSize: 16, marginBottom: 0 }}>
-          Yearly Profit Comparison — {lastYear} vs {thisYear}
+          {t('yearlyComparison.title').replace('{lastYear}', String(lastYear)).replace('{thisYear}', String(thisYear))}
         </div>
         <div style={{ display: 'flex', gap: 14, fontSize: 12, color: '#666' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>

@@ -2,8 +2,10 @@
 
 import { useMemo } from 'react';
 import type { FarmCropEntry } from '@/lib/types';
+import { useLanguage } from '@/lib/i18n';
 
 export default function CropProfitSummary({ entries }: { entries: FarmCropEntry[] }) {
+  const { t } = useLanguage();
   const byCrop = useMemo(() => {
     const map = new Map<string, { cropName: string; cost: number; revenue: number; profit: number; count: number }>();
     for (const e of entries) {
@@ -23,16 +25,16 @@ export default function CropProfitSummary({ entries }: { entries: FarmCropEntry[
 
   return (
     <div className="admin-form" style={{ marginBottom: 20 }}>
-      <div className="admin-page-title" style={{ fontSize: 16, marginBottom: 4 }}>Profit by Crop (Season)</div>
+      <div className="admin-page-title" style={{ fontSize: 16, marginBottom: 4 }}>{t('cropProfit.title')}</div>
       <div className="admin-list">
         {byCrop.map((row) => (
           <div key={row.cropName} className="admin-card" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <div className="admin-card-title">
-                {row.cropName} <span className="sub">{row.count} {row.count === 1 ? 'entry' : 'entries'}</span>
+                {row.cropName} <span className="sub">{row.count} {row.count === 1 ? t('cropProfit.unit.entry') : t('cropProfit.unit.entries')}</span>
               </div>
               <div className="admin-card-meta">
-                Cost ₹{Math.round(row.cost * 100) / 100} · Revenue ₹{Math.round(row.revenue * 100) / 100} · Profit{' '}
+                {t('cropProfit.label.cost')} ₹{Math.round(row.cost * 100) / 100} · {t('cropProfit.label.revenue')} ₹{Math.round(row.revenue * 100) / 100} · {t('cropProfit.label.profit')}{' '}
                 <strong style={{ color: row.profit >= 0 ? '#2e5339' : '#c0392b' }}>₹{Math.round(row.profit * 100) / 100}</strong>
               </div>
             </div>

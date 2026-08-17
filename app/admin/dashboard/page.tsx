@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useFarmers, useHarvestEntries, whatsAppEntryUrl } from '@/lib/harvest';
 import { useFarmCropEntries } from '@/lib/farmCrops';
 import SkeletonList from '@/components/SkeletonList';
+import { useLanguage } from '@/lib/i18n';
 import '../admin.css';
 
 function todayStr() {
@@ -11,6 +12,7 @@ function todayStr() {
 }
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const { farmers } = useFarmers();
   const { entries: harvestEntries, loading: harvestLoading } = useHarvestEntries();
   const { entries: cropEntries, loading: cropLoading } = useFarmCropEntries();
@@ -45,7 +47,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h1 className="admin-page-title">Dashboard</h1>
+      <h1 className="admin-page-title">{t('dashboard.title')}</h1>
 
       {loading ? (
         <SkeletonList rows={2} />
@@ -53,43 +55,43 @@ export default function Dashboard() {
         <>
           <div className="admin-stats">
             <div className="admin-stat-card">
-              <div className="admin-stat-label">Today's Harvesting Hours</div>
+              <div className="admin-stat-label">{t('dashboard.stat.todayHours')}</div>
               <div className="admin-stat-value">{summary.todayHours}</div>
             </div>
             <div className="admin-stat-card">
-              <div className="admin-stat-label">Today's Harvesting Amount</div>
+              <div className="admin-stat-label">{t('dashboard.stat.todayHarvestAmount')}</div>
               <div className="admin-stat-value">₹{summary.todayHarvestAmount}</div>
             </div>
             <div className="admin-stat-card">
-              <div className="admin-stat-label">Today's Vaadi Cost</div>
+              <div className="admin-stat-label">{t('dashboard.stat.todayVaadiCost')}</div>
               <div className="admin-stat-value warn">₹{summary.todayVaadiCost}</div>
             </div>
             <div className="admin-stat-card">
-              <div className="admin-stat-label">Today's Vaadi Revenue</div>
+              <div className="admin-stat-label">{t('dashboard.stat.todayVaadiRevenue')}</div>
               <div className="admin-stat-value">₹{summary.todayVaadiRevenue}</div>
             </div>
             <div className="admin-stat-card">
-              <div className="admin-stat-label">Total Pending</div>
+              <div className="admin-stat-label">{t('dashboard.stat.totalPending')}</div>
               <div className="admin-stat-value warn">₹{summary.totalPending}</div>
             </div>
             <div className="admin-stat-card">
-              <div className="admin-stat-label">Farmers</div>
+              <div className="admin-stat-label">{t('dashboard.stat.farmers')}</div>
               <div className="admin-stat-value">{summary.farmerCount}</div>
             </div>
           </div>
 
           {topPendingFarmers.length > 0 && (
             <div className="admin-form" style={{ marginBottom: 20 }}>
-              <div className="admin-page-title" style={{ fontSize: 16, marginBottom: 8 }}>Top Pending Payments</div>
+              <div className="admin-page-title" style={{ fontSize: 16, marginBottom: 8 }}>{t('dashboard.topPendingPayments')}</div>
               <div className="admin-list">
                 {topPendingFarmers.map(({ farmer, pending }) => (
                   <div key={farmer.id} className="admin-card">
                     <div className="admin-card-body">
                       <div className="admin-card-title">{farmer.name} <span className="sub">({farmer.village})</span></div>
-                      <div className="admin-card-meta">Pending: <strong style={{ color: '#c0392b' }}>₹{pending}</strong></div>
+                      <div className="admin-card-meta">{t('dashboard.pending')}: <strong style={{ color: '#c0392b' }}>₹{pending}</strong></div>
                     </div>
                     <div className="admin-card-actions">
-                      <a href={`/admin/farmers/${farmer.id}`} className="btn btn-secondary btn-sm">View</a>
+                      <a href={`/admin/farmers/${farmer.id}`} className="btn btn-secondary btn-sm">{t('dashboard.view')}</a>
                     </div>
                   </div>
                 ))}
@@ -98,7 +100,7 @@ export default function Dashboard() {
           )}
 
           <div className="admin-form">
-            <div className="admin-page-title" style={{ fontSize: 16, marginBottom: 8 }}>Recent Harvesting Entries</div>
+            <div className="admin-page-title" style={{ fontSize: 16, marginBottom: 8 }}>{t('dashboard.recentHarvestingEntries')}</div>
             <div className="admin-list">
               {recentEntries.map((entry) => (
                 <div key={entry.id} className="admin-card">
@@ -108,17 +110,17 @@ export default function Dashboard() {
                     </div>
                     <div className="admin-card-meta">
                       {entry.hours}h × ₹{entry.ratePerHour} = ₹{entry.totalAmount}
-                      {' · '}Pending <strong style={{ color: entry.pendingAmount > 0 ? '#c0392b' : '#2e5339' }}>₹{entry.pendingAmount}</strong>
+                      {' · '}{t('dashboard.pending')} <strong style={{ color: entry.pendingAmount > 0 ? '#c0392b' : '#2e5339' }}>₹{entry.pendingAmount}</strong>
                     </div>
                   </div>
                   <div className="admin-card-actions">
                     <a href={whatsAppEntryUrl(entry, harvestEntries)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
-                      WhatsApp
+                      {t('dashboard.whatsapp')}
                     </a>
                   </div>
                 </div>
               ))}
-              {recentEntries.length === 0 && <div className="admin-empty">No entries yet.</div>}
+              {recentEntries.length === 0 && <div className="admin-empty">{t('dashboard.noEntriesYet')}</div>}
             </div>
           </div>
         </>

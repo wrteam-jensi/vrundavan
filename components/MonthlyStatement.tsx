@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { whatsAppStatementUrl } from '@/lib/harvest';
 import type { Farmer, HarvestEntry } from '@/lib/types';
+import { useLanguage } from '@/lib/i18n';
 
 function currentMonthStr() {
   return new Date().toISOString().slice(0, 7); // YYYY-MM
@@ -14,6 +15,7 @@ function monthLabel(monthStr: string) {
 }
 
 export default function MonthlyStatement({ farmers, entries }: { farmers: Farmer[]; entries: HarvestEntry[] }) {
+  const { t } = useLanguage();
   const [farmerId, setFarmerId] = useState('');
   const [month, setMonth] = useState(currentMonthStr());
   const printId = 'monthly-statement-print';
@@ -38,10 +40,10 @@ export default function MonthlyStatement({ farmers, entries }: { farmers: Farmer
 
   return (
     <div className="admin-form" style={{ marginBottom: 20 }}>
-      <div className="admin-page-title" style={{ fontSize: 16, marginBottom: 4 }}>Monthly Statement</div>
+      <div className="admin-page-title" style={{ fontSize: 16, marginBottom: 4 }}>{t('monthlyStatement.title')}</div>
       <div className="admin-form-row">
         <select value={farmerId} onChange={(e) => setFarmerId(e.target.value)}>
-          <option value="">Select Farmer</option>
+          <option value="">{t('monthlyStatement.selectFarmer')}</option>
           {farmers.map((f) => (
             <option key={f.id} value={f.id}>{f.name} ({f.village})</option>
           ))}
@@ -52,15 +54,17 @@ export default function MonthlyStatement({ farmers, entries }: { farmers: Farmer
       {farmer && (
         <>
           <div className="admin-form-summary">
-            <span>Entries: <strong>{stats.entryCount}</strong></span>
-            <span>Hours: <strong>{stats.totalHours}</strong></span>
-            <span>Total: <strong>₹{stats.totalAmount}</strong></span>
-            <span>Paid: <strong>₹{stats.totalPaid}</strong></span>
-            <span className={stats.totalPending > 0 ? 'pending-due' : 'pending-ok'}>Pending: <strong>₹{stats.totalPending}</strong></span>
+            <span>{t('monthlyStatement.entries')} <strong>{stats.entryCount}</strong></span>
+            <span>{t('monthlyStatement.hours')} <strong>{stats.totalHours}</strong></span>
+            <span>{t('monthlyStatement.total')} <strong>₹{stats.totalAmount}</strong></span>
+            <span>{t('monthlyStatement.paid')} <strong>₹{stats.totalPaid}</strong></span>
+            <span className={stats.totalPending > 0 ? 'pending-due' : 'pending-ok'}>{t('monthlyStatement.pending')} <strong>₹{stats.totalPending}</strong></span>
           </div>
 
           {stats.entryCount === 0 ? (
-            <div className="admin-empty">No entries for {farmer.name} in {monthLabel(month)}.</div>
+            <div className="admin-empty">
+              {t('monthlyStatement.noEntries').replace('{name}', farmer.name).replace('{month}', monthLabel(month))}
+            </div>
           ) : (
             <div className="admin-list">
               {monthEntries.map((entry) => (
@@ -85,25 +89,25 @@ export default function MonthlyStatement({ farmers, entries }: { farmers: Farmer
               rel="noopener noreferrer"
               className="btn btn-whatsapp"
             >
-              Send Monthly Statement on WhatsApp
+              {t('monthlyStatement.sendWhatsApp')}
             </a>
             <button type="button" className="btn btn-secondary" onClick={() => window.print()}>
-              🖨️ Print Statement
+              🖨️ {t('monthlyStatement.printStatement')}
             </button>
           </div>
 
           <div id={printId} className="admin-print-only">
-            <h2>Vrundavan Farm — Harvesting Statement</h2>
-            <p>Farmer: <strong>{farmer.name}</strong> ({farmer.village})</p>
-            <p>Month: <strong>{monthLabel(month)}</strong></p>
+            <h2>{t('monthlyStatement.print.heading')}</h2>
+            <p>{t('monthlyStatement.print.farmer')} <strong>{farmer.name}</strong> ({farmer.village})</p>
+            <p>{t('monthlyStatement.print.month')} <strong>{monthLabel(month)}</strong></p>
             <table>
               <thead>
                 <tr>
-                  <th>Date</th>
-                  <th>Time</th>
-                  <th>Hours</th>
-                  <th>Rate</th>
-                  <th>Amount</th>
+                  <th>{t('monthlyStatement.print.date')}</th>
+                  <th>{t('monthlyStatement.print.time')}</th>
+                  <th>{t('monthlyStatement.print.hours')}</th>
+                  <th>{t('monthlyStatement.print.rate')}</th>
+                  <th>{t('monthlyStatement.print.amount')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -119,11 +123,11 @@ export default function MonthlyStatement({ farmers, entries }: { farmers: Farmer
               </tbody>
             </table>
             <p style={{ marginTop: 16 }}>
-              Total Entries: {stats.entryCount} &nbsp;|&nbsp;
-              Total Hours: {stats.totalHours} &nbsp;|&nbsp;
-              Total Amount: ₹{stats.totalAmount} &nbsp;|&nbsp;
-              Paid: ₹{stats.totalPaid} &nbsp;|&nbsp;
-              Pending: ₹{stats.totalPending}
+              {t('monthlyStatement.print.totalEntries')} {stats.entryCount} &nbsp;|&nbsp;
+              {t('monthlyStatement.print.totalHours')} {stats.totalHours} &nbsp;|&nbsp;
+              {t('monthlyStatement.print.totalAmount')} ₹{stats.totalAmount} &nbsp;|&nbsp;
+              {t('monthlyStatement.paid')} ₹{stats.totalPaid} &nbsp;|&nbsp;
+              {t('monthlyStatement.pending')} ₹{stats.totalPending}
             </p>
           </div>
         </>

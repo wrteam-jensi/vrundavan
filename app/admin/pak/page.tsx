@@ -7,24 +7,12 @@ import { downloadCsv } from '@/lib/csvExport';
 import type { ExpenseCategory, Pak, PakExpense } from '@/lib/types';
 import SkeletonList from '@/components/SkeletonList';
 import { useAdminUI } from '@/components/AdminUI';
+import { useLanguage } from '@/lib/i18n';
 import '../admin.css';
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
-
-const CATEGORIES: { key: ExpenseCategory; label: string }[] = [
-  { key: 'seed', label: 'Seed (Beej)' },
-  { key: 'fertilizer', label: 'Fertilizer (Khatar)' },
-  { key: 'pesticide', label: 'Pesticide (Dava)' },
-  { key: 'labor', label: 'Labor (Majoor)' },
-  { key: 'fuel', label: 'Fuel' },
-  { key: 'other', label: 'Other' },
-];
-
-const CATEGORY_LABEL: Record<ExpenseCategory, string> = Object.fromEntries(
-  CATEGORIES.map((c) => [c.key, c.label])
-) as Record<ExpenseCategory, string>;
 
 function totalCost(pak: Pak) {
   return Math.round(pak.expenses.reduce((s, e) => s + e.amount, 0) * 100) / 100;
@@ -66,18 +54,8 @@ type ExpenseCsvRow = {
   note: string;
 };
 
-const CSV_COLUMNS: { key: keyof ExpenseCsvRow; label: string }[] = [
-  { key: 'vaadiName', label: 'Vaadi' },
-  { key: 'cropName', label: 'Crop (Pak)' },
-  { key: 'plantedDate', label: 'Vavayo (Planted)' },
-  { key: 'harvestedDate', label: 'Nikdyo (Harvested)' },
-  { key: 'expenseDate', label: 'Expense Date' },
-  { key: 'category', label: 'Category' },
-  { key: 'amount', label: 'Amount' },
-  { key: 'note', label: 'Note' },
-];
-
 export default function PakAdmin() {
+  const { t } = useLanguage();
   const { showToast, confirm } = useAdminUI();
   const { paks, loading } = usePaks();
   const { vaadis } = useVaadis();
@@ -93,6 +71,30 @@ export default function PakAdmin() {
   const [expenseForm, setExpenseForm] = useState(EMPTY_EXPENSE);
   const [harvestId, setHarvestId] = useState<string | null>(null);
   const [harvestForm, setHarvestForm] = useState(EMPTY_HARVEST);
+
+  const CATEGORIES: { key: ExpenseCategory; label: string }[] = [
+    { key: 'seed', label: t('pak.category.seed') },
+    { key: 'fertilizer', label: t('pak.category.fertilizer') },
+    { key: 'pesticide', label: t('pak.category.pesticide') },
+    { key: 'labor', label: t('pak.category.labor') },
+    { key: 'fuel', label: t('pak.category.fuel') },
+    { key: 'other', label: t('pak.category.other') },
+  ];
+
+  const CATEGORY_LABEL: Record<ExpenseCategory, string> = Object.fromEntries(
+    CATEGORIES.map((c) => [c.key, c.label])
+  ) as Record<ExpenseCategory, string>;
+
+  const CSV_COLUMNS: { key: keyof ExpenseCsvRow; label: string }[] = [
+    { key: 'vaadiName', label: t('pak.csv.vaadi') },
+    { key: 'cropName', label: t('pak.csv.crop') },
+    { key: 'plantedDate', label: t('pak.csv.planted') },
+    { key: 'harvestedDate', label: t('pak.csv.harvested') },
+    { key: 'expenseDate', label: t('pak.csv.expenseDate') },
+    { key: 'category', label: t('pak.csv.category') },
+    { key: 'amount', label: t('pak.csv.amount') },
+    { key: 'note', label: t('pak.csv.note') },
+  ];
 
   const startEdit = (pak: Pak) => {
     setEditingId(pak.id);
@@ -128,29 +130,29 @@ export default function PakAdmin() {
       };
       if (editingId) {
         await updatePak(editingId, data);
-        showToast('Pak updated.');
+        showToast(t('pak.toast.updated'));
       } else {
         await createPak(data);
-        showToast('Pak added.');
+        showToast(t('pak.toast.added'));
       }
       cancelEdit();
     } catch {
-      showToast('Something went wrong. Try again.', 'error');
+      showToast(t('pak.toast.error'), 'error');
     } finally {
       setBusy(false);
     }
   };
 
   const onDelete = async (pak: Pak) => {
-    if (!(await confirm(`Delete this ${pak.cropName} pak and all its expenses?`))) return;
+    if (!(await confirm(t('pak.confirm.deletePak').replace('{crop}', pak.cropName)))) return;
     const { id, ...data } = pak;
     await deletePak(id);
-    showToast('Pak deleted.', {
+    showToast(t('pak.toast.deleted'), {
       action: {
-        label: 'Undo',
+        label: t('pak.toast.undo'),
         onClick: async () => {
           await createPak(data);
-          showToast('Pak restored.');
+          showToast(t('pak.toast.restored'));
         },
       },
     });
@@ -162,14 +164,14 @@ export default function PakAdmin() {
     const { id, ...data } = pak;
     await updatePak(id, { ...data, expenses: [...pak.expenses, expense] });
     setExpenseForm({ ...EMPTY_EXPENSE, date: expenseForm.date });
-    showToast('Expense added.');
+    showToast(t('pak.toast.expenseAdded'));
   };
 
   const removeExpense = async (pak: Pak, index: number) => {
-    if (!(await confirm('Remove this expense entry?'))) return;
+    if (!(await confirm(t('pak.confirm.removeExpense')))) return;
     const { id, ...data } = pak;
     await updatePak(id, { ...data, expenses: pak.expenses.filter((_, i) => i !== index) });
-    showToast('Expense removed.');
+    showToast(t('pak.toast.expenseRemoved'));
   };
 
   const startHarvest = (pak: Pak) => {
@@ -198,7 +200,7 @@ export default function PakAdmin() {
       pricePerUnit: harvestForm.pricePerUnit,
     });
     cancelHarvest();
-    showToast('Harvest recorded.');
+    showToast(t('pak.toast.harvestRecorded'));
   };
 
   const cropNames = useMemo(() => Array.from(new Set(paks.map((p) => p.cropName))).sort(), [paks]);
@@ -242,14 +244,14 @@ export default function PakAdmin() {
           ...p,
           amount: Math.round((profit * p.sharePercent) / 100 * 100) / 100,
         }));
-        return { vaadiId, vaadiName: vaadi?.name ?? '(Unassigned)', paks: vaadiPaks, cost, revenue, profit, partnerShares };
+        return { vaadiId, vaadiName: vaadi?.name ?? t('pak.unassigned'), paks: vaadiPaks, cost, revenue, profit, partnerShares };
       })
       .sort((a, b) => b.cost - a.cost);
   }, [filtered, vaadiById]);
 
   const exportCsv = () => {
     const rows: ExpenseCsvRow[] = filtered.flatMap((p) => {
-      const vaadiName = vaadiById.get(p.vaadiId)?.name ?? '(Unassigned)';
+      const vaadiName = vaadiById.get(p.vaadiId)?.name ?? t('pak.unassigned');
       return p.expenses.length
         ? p.expenses.map((ex) => ({
             vaadiName,
@@ -279,19 +281,19 @@ export default function PakAdmin() {
 
   return (
     <div>
-      <h1 className="admin-page-title">Pak (Crop Cycles)</h1>
+      <h1 className="admin-page-title">{t('pak.title')}</h1>
 
       <div className="admin-stats">
         <div className="admin-stat-card">
-          <div className="admin-stat-label">Total Cost</div>
+          <div className="admin-stat-label">{t('pak.stat.totalCost')}</div>
           <div className="admin-stat-value warn">₹{summary.totalCost}</div>
         </div>
         <div className="admin-stat-card">
-          <div className="admin-stat-label">Total Revenue</div>
+          <div className="admin-stat-label">{t('pak.stat.totalRevenue')}</div>
           <div className="admin-stat-value">₹{summary.totalRevenue}</div>
         </div>
         <div className="admin-stat-card">
-          <div className="admin-stat-label">Total Profit</div>
+          <div className="admin-stat-label">{t('pak.stat.totalProfit')}</div>
           <div className="admin-stat-value" style={{ color: summary.totalProfit >= 0 ? '#2e5339' : '#c0392b' }}>
             ₹{summary.totalProfit}
           </div>
@@ -305,7 +307,9 @@ export default function PakAdmin() {
               <div className="admin-card-body">
                 <div className="admin-card-title">{v.vaadiName}</div>
                 <div className="admin-card-meta">
-                  {v.paks.length} {v.paks.length === 1 ? 'pak' : 'paks'} · Cost ₹{v.cost} · Revenue ₹{v.revenue} · Profit{' '}
+                  {v.paks.length} {v.paks.length === 1 ? t('pak.unit.pak') : t('pak.unit.paks')} ·{' '}
+                  {t('pak.summary.cost').replace('{amount}', String(v.cost))} ·{' '}
+                  {t('pak.summary.revenue').replace('{amount}', String(v.revenue))} · {t('pak.summary.profit')}{' '}
                   <strong style={{ color: v.profit >= 0 ? '#2e5339' : '#c0392b' }}>₹{v.profit}</strong>
                 </div>
                 {v.partnerShares.length > 0 && (
@@ -322,35 +326,35 @@ export default function PakAdmin() {
       <form onSubmit={onSubmit} className="admin-form">
         <div className="admin-form-row">
           <label className="admin-field">
-            Vaadi
+            {t('pak.field.vaadi')}
             <select value={form.vaadiId} onChange={(e) => setForm({ ...form, vaadiId: e.target.value })} required>
-              <option value="" disabled>Select vaadi</option>
+              <option value="" disabled>{t('pak.field.selectVaadi')}</option>
               {vaadis.map((v) => (
                 <option key={v.id} value={v.id}>{v.name}</option>
               ))}
             </select>
           </label>
           <label className="admin-field">
-            Crop (Pak)
-            <input value={form.cropName} onChange={(e) => setForm({ ...form, cropName: e.target.value })} required placeholder="e.g. Wheat, Cotton" />
+            {t('pak.field.crop')}
+            <input value={form.cropName} onChange={(e) => setForm({ ...form, cropName: e.target.value })} required placeholder={t('pak.field.cropPlaceholder')} />
           </label>
           <label className="admin-field">
-            Vavayo (Planted Date)
+            {t('pak.field.plantedDate')}
             <input type="date" value={form.plantedDate} onChange={(e) => setForm({ ...form, plantedDate: e.target.value })} required />
           </label>
         </div>
         <label className="admin-field admin-field-wide">
-          Note (optional)
+          {t('pak.field.note')}
           <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
         </label>
 
         <div className="admin-form-actions">
           <button type="submit" className="btn btn-primary" disabled={busy}>
-            {editingId ? 'Update Pak' : 'Add Pak'}
+            {editingId ? t('pak.button.updatePak') : t('pak.button.addPak')}
           </button>
           {editingId && (
             <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
-              Cancel
+              {t('pak.button.cancel')}
             </button>
           )}
         </div>
@@ -358,27 +362,27 @@ export default function PakAdmin() {
 
       <div className="admin-filters">
         <select value={vaadiFilter} onChange={(e) => setVaadiFilter(e.target.value)}>
-          <option value="">All Vaadi</option>
+          <option value="">{t('pak.filter.allVaadi')}</option>
           {vaadis.map((v) => (
             <option key={v.id} value={v.id}>{v.name}</option>
           ))}
         </select>
         <select value={cropFilter} onChange={(e) => setCropFilter(e.target.value)}>
-          <option value="">All Crops</option>
+          <option value="">{t('pak.filter.allCrops')}</option>
           {cropNames.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
         </select>
         <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)}>
-          <option value="">All Years</option>
+          <option value="">{t('pak.filter.allYears')}</option>
           {years.map((y) => (
             <option key={y} value={y}>{y}</option>
           ))}
         </select>
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          <option value="">All Status</option>
-          <option value="growing">Growing</option>
-          <option value="harvested">Harvested</option>
+          <option value="">{t('pak.filter.allStatus')}</option>
+          <option value="growing">{t('pak.status.growing')}</option>
+          <option value="harvested">{t('pak.status.harvested')}</option>
         </select>
         {(vaadiFilter || cropFilter || yearFilter || statusFilter) && (
           <button
@@ -386,11 +390,11 @@ export default function PakAdmin() {
             className="btn btn-secondary"
             onClick={() => { setVaadiFilter(''); setCropFilter(''); setYearFilter(''); setStatusFilter(''); }}
           >
-            Clear Filter
+            {t('pak.filter.clear')}
           </button>
         )}
         <button type="button" className="btn btn-secondary" onClick={exportCsv}>
-          Export CSV
+          {t('pak.button.exportCsv')}
         </button>
       </div>
 
@@ -412,16 +416,17 @@ export default function PakAdmin() {
               <div key={pak.id} className="admin-card" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
                 <div className="admin-card-body">
                   <div className="admin-card-title">
-                    {pak.cropName} <span className="sub">({vaadiById.get(pak.vaadiId)?.name ?? '(Unassigned)'})</span>{' '}
+                    {pak.cropName} <span className="sub">({vaadiById.get(pak.vaadiId)?.name ?? t('pak.unassigned')})</span>{' '}
                     <span className="sub">
-                      {pak.plantedDate} → {pak.harvestedDate ?? 'Growing'}
+                      {pak.plantedDate} → {pak.harvestedDate ?? t('pak.status.growing')}
                     </span>
                   </div>
                   <div className="admin-card-meta">
-                    Total Cost ₹{cost}
+                    {t('pak.summary.totalCost').replace('{amount}', String(cost))}
                     {pak.harvestedDate && (
                       <>
-                        {' '}· Yield {pak.yieldQty} {pak.yieldUnit} · Revenue ₹{revenue} · Profit{' '}
+                        {' '}· {t('pak.summary.yield').replace('{qty}', String(pak.yieldQty)).replace('{unit}', pak.yieldUnit)} ·{' '}
+                        {t('pak.summary.revenue').replace('{amount}', String(revenue))} · {t('pak.summary.profit')}{' '}
                         <strong style={{ color: profit >= 0 ? '#2e5339' : '#c0392b' }}>₹{profit}</strong>
                       </>
                     )}
@@ -436,28 +441,28 @@ export default function PakAdmin() {
 
                 <div className="admin-card-actions">
                   <button type="button" className="btn btn-primary btn-sm" onClick={() => setExpandedId(expanded ? null : pak.id)}>
-                    💰 {expanded ? 'Hide Cost Entries' : `Add / View Cost (${pak.expenses.length})`}
+                    💰 {expanded ? t('pak.button.hideCostEntries') : t('pak.button.addViewCost').replace('{count}', String(pak.expenses.length))}
                   </button>
                   {!pak.harvestedDate && harvestId !== pak.id && (
                     <button type="button" className="btn btn-secondary btn-sm" onClick={() => startHarvest(pak)}>
-                      🌾 Mark Harvested
+                      🌾 {t('pak.button.markHarvested')}
                     </button>
                   )}
                   {pak.harvestedDate && harvestId !== pak.id && (
                     <button type="button" className="btn btn-secondary btn-sm" onClick={() => startHarvest(pak)}>
-                      ✏️ Edit Harvest
+                      ✏️ {t('pak.button.editHarvest')}
                     </button>
                   )}
                   {harvestId === pak.id && (
                     <button type="button" className="btn btn-secondary btn-sm" onClick={cancelHarvest}>
-                      Cancel Harvest
+                      {t('pak.button.cancelHarvest')}
                     </button>
                   )}
                   <span style={{ flex: '1 1 auto' }} />
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(pak)} title="Edit pak details" aria-label="Edit pak details">
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(pak)} title={t('pak.action.editPakDetails')} aria-label={t('pak.action.editPakDetails')}>
                     ⚙️
                   </button>
-                  <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(pak)} title="Delete pak" aria-label="Delete pak">
+                  <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(pak)} title={t('pak.action.deletePak')} aria-label={t('pak.action.deletePak')}>
                     🗑️
                   </button>
                 </div>
@@ -465,7 +470,7 @@ export default function PakAdmin() {
                 {harvestId === pak.id && (
                   <form onSubmit={(e) => saveHarvest(pak, e)} className="admin-form-row" style={{ marginTop: 12, borderTop: '1px solid #e5e5e0', paddingTop: 12 }}>
                     <label className="admin-field">
-                      Nikdyo (Harvested Date)
+                      {t('pak.field.harvestedDate')}
                       <input
                         type="date"
                         value={harvestForm.harvestedDate}
@@ -474,7 +479,7 @@ export default function PakAdmin() {
                       />
                     </label>
                     <label className="admin-field">
-                      Yield Qty
+                      {t('pak.field.yieldQty')}
                       <div className="admin-field-pair">
                         <input
                           type="number"
@@ -486,12 +491,12 @@ export default function PakAdmin() {
                         <input
                           value={harvestForm.yieldUnit}
                           onChange={(e) => setHarvestForm({ ...harvestForm, yieldUnit: e.target.value })}
-                          placeholder="kg"
+                          placeholder={t('pak.field.yieldUnitPlaceholder')}
                         />
                       </div>
                     </label>
                     <label className="admin-field">
-                      Price / Unit (₹)
+                      {t('pak.field.pricePerUnit')}
                       <input
                         type="number"
                         min={0}
@@ -501,7 +506,7 @@ export default function PakAdmin() {
                       />
                     </label>
                     <div className="admin-form-actions">
-                      <button type="submit" className="btn btn-primary btn-sm">Save Harvest</button>
+                      <button type="submit" className="btn btn-primary btn-sm">{t('pak.button.saveHarvest')}</button>
                     </div>
                   </form>
                 )}
@@ -510,7 +515,7 @@ export default function PakAdmin() {
                   <div style={{ marginTop: 12, borderTop: '1px solid #e5e5e0', paddingTop: 12 }}>
                     <form onSubmit={(e) => addExpense(pak, e)} className="admin-form-row" style={{ marginBottom: 12 }}>
                       <label className="admin-field">
-                        Date
+                        {t('pak.field.date')}
                         <input
                           type="date"
                           value={expenseForm.date}
@@ -519,7 +524,7 @@ export default function PakAdmin() {
                         />
                       </label>
                       <label className="admin-field">
-                        Category
+                        {t('pak.field.category')}
                         <select
                           value={expenseForm.category}
                           onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value as ExpenseCategory })}
@@ -530,7 +535,7 @@ export default function PakAdmin() {
                         </select>
                       </label>
                       <label className="admin-field">
-                        Amount (₹)
+                        {t('pak.field.amount')}
                         <input
                           type="number"
                           min={0}
@@ -541,16 +546,16 @@ export default function PakAdmin() {
                         />
                       </label>
                       <label className="admin-field">
-                        Note (optional)
+                        {t('pak.field.note')}
                         <input value={expenseForm.note} onChange={(e) => setExpenseForm({ ...expenseForm, note: e.target.value })} />
                       </label>
                       <div className="admin-form-actions">
-                        <button type="submit" className="btn btn-primary btn-sm">Add Expense</button>
+                        <button type="submit" className="btn btn-primary btn-sm">{t('pak.button.addExpense')}</button>
                       </div>
                     </form>
 
                     {pak.expenses.length === 0 ? (
-                      <div className="admin-empty">No expenses yet.</div>
+                      <div className="admin-empty">{t('pak.empty.noExpenses')}</div>
                     ) : (
                       <div style={{ display: 'grid', gap: 6 }}>
                         {[...pak.expenses]
@@ -566,7 +571,7 @@ export default function PakAdmin() {
                                 {ex.note && <span style={{ color: '#888' }}> — {ex.note}</span>}
                               </span>
                               <button type="button" className="btn btn-danger btn-sm" onClick={() => removeExpense(pak, i)}>
-                                Remove
+                                {t('pak.button.remove')}
                               </button>
                             </div>
                           ))}
@@ -577,7 +582,7 @@ export default function PakAdmin() {
               </div>
             );
           })}
-          {filtered.length === 0 && <div className="admin-empty">No paks found.</div>}
+          {filtered.length === 0 && <div className="admin-empty">{t('pak.empty.noPaks')}</div>}
         </div>
       )}
     </div>
