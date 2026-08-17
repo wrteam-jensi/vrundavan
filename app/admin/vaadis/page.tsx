@@ -175,15 +175,11 @@ export default function VaadisAdmin() {
     setEditWithdrawId(null);
   };
 
-  const submitWithdraw = async (e: FormEvent, remaining: number) => {
+  const submitWithdraw = async (e: FormEvent) => {
     e.preventDefault();
     if (!withdrawFor) return;
     if (withdrawForm.amount <= 0) {
       showToast(t('vaadis.toast.invalidAmount'), 'error');
-      return;
-    }
-    if (withdrawForm.amount > remaining) {
-      showToast(t('vaadis.toast.amountExceedsRemaining').replace('{amount}', String(remaining)), 'error');
       return;
     }
     setWithdrawBusy(true);
@@ -337,14 +333,7 @@ export default function VaadisAdmin() {
 
                       {withdrawFor?.partnerId === p.id && (
                         <form
-                          onSubmit={(e) =>
-                            submitWithdraw(
-                              e,
-                              editWithdrawId
-                                ? Math.round((p.remaining + (withdrawals.find((w) => w.id === editWithdrawId)?.amount ?? 0)) * 100) / 100
-                                : p.remaining
-                            )
-                          }
+                          onSubmit={(e) => submitWithdraw(e)}
                           className="admin-form-row"
                           style={{ marginTop: 8 }}
                         >
