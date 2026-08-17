@@ -108,6 +108,7 @@ export interface Pak {
   expenses: PakExpense[];
   yieldQty: number;
   yieldUnit: string;
+  kgPerUnit: number; // e.g. 1 quintal = 40 kg — used to derive total kg for display only
   pricePerUnit: number;
   note: string;
   createdAt: number;

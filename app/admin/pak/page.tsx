@@ -39,7 +39,8 @@ const EMPTY_EXPENSE = {
 const EMPTY_HARVEST = {
   harvestedDate: todayStr(),
   yieldQty: 0,
-  yieldUnit: 'kg',
+  yieldUnit: 'quintal',
+  kgPerUnit: 40,
   pricePerUnit: 0,
 };
 
@@ -123,7 +124,8 @@ export default function PakAdmin() {
         harvestedDate: existing?.harvestedDate ?? null,
         expenses: existing?.expenses ?? [],
         yieldQty: existing?.yieldQty ?? 0,
-        yieldUnit: existing?.yieldUnit ?? 'kg',
+        yieldUnit: existing?.yieldUnit ?? 'quintal',
+        kgPerUnit: existing?.kgPerUnit ?? 40,
         pricePerUnit: existing?.pricePerUnit ?? 0,
         note: form.note,
         createdAt: existing?.createdAt ?? Date.now(),
@@ -180,6 +182,7 @@ export default function PakAdmin() {
       harvestedDate: pak.harvestedDate ?? todayStr(),
       yieldQty: pak.yieldQty,
       yieldUnit: pak.yieldUnit,
+      kgPerUnit: pak.kgPerUnit ?? 40,
       pricePerUnit: pak.pricePerUnit,
     });
   };
@@ -197,6 +200,7 @@ export default function PakAdmin() {
       harvestedDate: harvestForm.harvestedDate,
       yieldQty: harvestForm.yieldQty,
       yieldUnit: harvestForm.yieldUnit,
+      kgPerUnit: harvestForm.kgPerUnit,
       pricePerUnit: harvestForm.pricePerUnit,
     });
     cancelHarvest();
@@ -425,7 +429,8 @@ export default function PakAdmin() {
                     {t('pak.summary.totalCost').replace('{amount}', String(cost))}
                     {pak.harvestedDate && (
                       <>
-                        {' '}· {t('pak.summary.yield').replace('{qty}', String(pak.yieldQty)).replace('{unit}', pak.yieldUnit)} ·{' '}
+                        {' '}· {t('pak.summary.yield').replace('{qty}', String(pak.yieldQty)).replace('{unit}', pak.yieldUnit)}
+                        {' '}({Math.round(pak.yieldQty * (pak.kgPerUnit ?? 1) * 100) / 100} kg) ·{' '}
                         {t('pak.summary.revenue').replace('{amount}', String(revenue))} · {t('pak.summary.profit')}{' '}
                         <strong style={{ color: profit >= 0 ? '#2e5339' : '#c0392b' }}>₹{profit}</strong>
                       </>
@@ -496,6 +501,16 @@ export default function PakAdmin() {
                       </div>
                     </label>
                     <label className="admin-field">
+                      {t('pak.field.kgPerUnit')}
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        value={harvestForm.kgPerUnit}
+                        onChange={(e) => setHarvestForm({ ...harvestForm, kgPerUnit: Number(e.target.value) })}
+                      />
+                    </label>
+                    <label className="admin-field">
                       {t('pak.field.pricePerUnit')}
                       <input
                         type="number"
@@ -505,6 +520,12 @@ export default function PakAdmin() {
                         onChange={(e) => setHarvestForm({ ...harvestForm, pricePerUnit: Number(e.target.value) })}
                       />
                     </label>
+                    <div className="admin-form-summary">
+                      <span>
+                        {t('pak.field.totalKg')}{' '}
+                        <strong>{Math.round(harvestForm.yieldQty * harvestForm.kgPerUnit * 100) / 100} kg</strong>
+                      </span>
+                    </div>
                     <div className="admin-form-actions">
                       <button type="submit" className="btn btn-primary btn-sm">{t('pak.button.saveHarvest')}</button>
                     </div>
