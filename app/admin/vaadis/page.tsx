@@ -212,7 +212,8 @@ export default function VaadisAdmin() {
         showToast(t('vaadis.toast.withdrawalRecorded'));
       }
       cancelWithdraw();
-    } catch {
+    } catch (err) {
+      console.error('submitWithdraw failed', err);
       showToast(t('vaadis.toast.error'), 'error');
     } finally {
       setWithdrawBusy(false);
