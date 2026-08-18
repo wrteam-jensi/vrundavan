@@ -427,7 +427,7 @@ export default function HarvestingAdmin() {
               <div className="admin-farmer-group-header">
                 <strong>{g.farmerName}</strong>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <span className={g.pendingTotal > 0 ? 'pending-due' : 'pending-ok'}>
+                  <span className={`admin-pending-badge ${g.pendingTotal > 0 ? 'pending-due' : 'pending-ok'}`}>
                     {t('harvesting.card.pending')} <strong>₹{g.pendingTotal}</strong>
                   </span>
                   <a
@@ -447,7 +447,7 @@ export default function HarvestingAdmin() {
                       type="checkbox"
                       checked={selectedIds.has(entry.id)}
                       onChange={() => toggleSelect(entry.id)}
-                      style={{ width: 18, height: 18, flexShrink: 0 }}
+                      className="admin-entry-checkbox"
                       aria-label={t('harvesting.selectEntryAria').replace('{name}', entry.farmerName)}
                     />
                   )}
@@ -460,7 +460,9 @@ export default function HarvestingAdmin() {
                       {' · '}{t('harvesting.card.advance')} ₹{entry.advanceAmount} · {t('harvesting.card.paid')} ₹{entry.paidAmount} · {t('harvesting.card.pending')}{' '}
                       <strong style={{ color: entry.pendingAmount > 0 ? '#c0392b' : '#2e5339' }}>₹{entry.pendingAmount}</strong>
                     </div>
-                    {entry.note && <div className="admin-card-meta">{entry.note}</div>}
+                    {entry.note && (
+                      <div className="admin-entry-note">{t('harvesting.card.note')} {entry.note}</div>
+                    )}
                   </div>
                   <div className="admin-card-actions">
                     <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(entry)}>{t('harvesting.edit')}</button>
