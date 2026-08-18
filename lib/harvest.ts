@@ -116,6 +116,26 @@ export function whatsAppEntryUrl(entry: HarvestEntry, allEntries: HarvestEntry[]
   return `https://wa.me/${normalizePhone(entry.farmerMobile)}?text=${encodeURIComponent(message)}`;
 }
 
+// Combines all given entries for one farmer (already date-sorted) into a single
+// date-wise WhatsApp message, plus the farmer's overall pending total.
+export function whatsAppFarmerUrl(farmerName: string, farmerMobile: string, farmerEntries: HarvestEntry[], allEntries: HarvestEntry[]) {
+  const totalHours = Math.round(farmerEntries.reduce((s, e) => s + e.hours, 0) * 100) / 100;
+  const totalAmount = Math.round(farmerEntries.reduce((s, e) => s + e.totalAmount, 0) * 100) / 100;
+  const totalPaid = Math.round(farmerEntries.reduce((s, e) => s + e.paidAmount + e.advanceAmount, 0) * 100) / 100;
+  const shownPending = Math.round(farmerEntries.reduce((s, e) => s + e.pendingAmount, 0) * 100) / 100;
+  const overallPending = Math.round(
+    allEntries.filter((e) => e.farmerId === farmerEntries[0]?.farmerId).reduce((s, e) => s + e.pendingAmount, 0) * 100
+  ) / 100;
+
+  const history = farmerEntries
+    .map((e) => `${e.date} ${e.startTime}–${e.endTime}: ${e.hours}h × ₹${e.ratePerHour} = ₹${e.totalAmount}`)
+    .join('\n');
+
+  const message = `Namaste ${farmerName},\nTamara farm par harvesting kaam nu summary:\n\n${history}\n\nKul Kalak: ${totalHours}\nTotal Charge: ₹${totalAmount}\nPaid: ₹${totalPaid}\nPending: ₹${shownPending}\nKul Pending (badha divas): ₹${overallPending}\n\nThank you.`;
+
+  return `https://wa.me/${normalizePhone(farmerMobile)}?text=${encodeURIComponent(message)}`;
+}
+
 export function whatsAppStatementUrl(farmer: Farmer, monthLabel: string, stats: {
   totalHours: number;
   totalAmount: number;

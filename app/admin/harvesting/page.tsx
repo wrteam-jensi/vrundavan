@@ -9,7 +9,7 @@ import {
   updateHarvestEntry,
   useFarmers,
   useHarvestEntries,
-  whatsAppEntryUrl,
+  whatsAppFarmerUrl,
 } from '@/lib/harvest';
 import { updateRatePerHour, useRatePerHour } from '@/lib/useSettings';
 import { downloadCsv } from '@/lib/csvExport';
@@ -229,6 +229,9 @@ export default function HarvestingAdmin() {
       g.pendingTotal = Math.round((g.pendingTotal + e.pendingAmount) * 100) / 100;
       map.set(e.farmerId, g);
     }
+    for (const g of map.values()) {
+      g.entries.sort((a, b) => (a.date === b.date ? a.startTime.localeCompare(b.startTime) : a.date.localeCompare(b.date)));
+    }
     return Array.from(map.values());
   }, [filtered]);
 
@@ -420,15 +423,25 @@ export default function HarvestingAdmin() {
       ) : (
         <div className="admin-list">
           {groupedByFarmer.map((g) => (
-            <div key={g.farmerId} style={{ display: 'grid', gap: 8, marginBottom: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+            <div key={g.farmerId} className="admin-farmer-group">
+              <div className="admin-farmer-group-header">
                 <strong>{g.farmerName}</strong>
-                <span className={g.pendingTotal > 0 ? 'pending-due' : 'pending-ok'}>
-                  {t('harvesting.card.pending')} <strong>₹{g.pendingTotal}</strong>
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <span className={g.pendingTotal > 0 ? 'pending-due' : 'pending-ok'}>
+                    {t('harvesting.card.pending')} <strong>₹{g.pendingTotal}</strong>
+                  </span>
+                  <a
+                    href={whatsAppFarmerUrl(g.farmerName, g.entries[0].farmerMobile, g.entries, entries)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-whatsapp btn-sm"
+                  >
+                    {t('harvesting.sendWhatsApp')}
+                  </a>
+                </div>
               </div>
               {g.entries.map((entry) => (
-                <div key={entry.id} className="admin-card">
+                <div key={entry.id} className="admin-entry-row">
                   {entry.pendingAmount > 0 && (
                     <input
                       type="checkbox"
@@ -440,7 +453,7 @@ export default function HarvestingAdmin() {
                   )}
                   <div className="admin-card-body">
                     <div className="admin-card-title">
-                      {entry.farmerName} <span className="sub">{entry.date} · {entry.startTime}–{entry.endTime}</span>
+                      {entry.date} <span className="sub">{entry.startTime}–{entry.endTime}</span>
                     </div>
                     <div className="admin-card-meta">
                       {entry.hours}h × ₹{entry.ratePerHour} = ₹{entry.totalAmount}
@@ -450,9 +463,6 @@ export default function HarvestingAdmin() {
                     {entry.note && <div className="admin-card-meta">{entry.note}</div>}
                   </div>
                   <div className="admin-card-actions">
-                    <a href={whatsAppEntryUrl(entry, entries)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
-                      {t('harvesting.sendWhatsApp')}
-                    </a>
                     <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(entry)}>{t('harvesting.edit')}</button>
                     <button type="button" className="btn btn-danger btn-sm" onClick={() => onDelete(entry)}>{t('harvesting.delete')}</button>
                   </div>

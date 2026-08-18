@@ -479,6 +479,42 @@ input:focus, select:focus, textarea:focus {
   margin-left: auto;
 }
 
+.admin-farmer-group {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #ececE6;
+  overflow: hidden;
+}
+
+.admin-farmer-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  background: #f7f7f2;
+  border-bottom: 1px solid #ececE6;
+  font-size: 15px;
+}
+
+.admin-entry-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-bottom: 1px solid #f2f2ec;
+}
+
+.admin-entry-row:last-child {
+  border-bottom: none;
+}
+
+.admin-entry-row:hover {
+  background: #fafaf7;
+}
+
 /* ── Seed button ── */
 .admin-seed-btn {
   margin-bottom: 16px;
@@ -605,6 +641,20 @@ input:focus, select:focus, textarea:focus {
   }
 
   .admin-form-actions .btn {
+    flex: 1 1 auto;
+  }
+
+  .admin-entry-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-entry-row .admin-card-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .admin-entry-row .admin-card-actions .btn {
     flex: 1 1 auto;
   }
 }
