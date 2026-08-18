@@ -147,6 +147,7 @@ export const en = {
   'harvesting.advance': 'Advance',
   'harvesting.paidNow': 'Paid Now',
   'harvesting.noteOptional': 'Note (optional)',
+  'harvesting.card.note': 'Note:',
   'harvesting.summary.hours': 'Hours:',
   'harvesting.summary.total': 'Total:',
   'harvesting.summary.pending': 'Pending:',

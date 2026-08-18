@@ -149,6 +149,7 @@ export const gu: Record<keyof typeof en, string> = {
   'harvesting.advance': 'એડવાન્સ',
   'harvesting.paidNow': 'હમણાં ચૂકવેલ',
   'harvesting.noteOptional': 'નોંધ (વૈકલ્પિક)',
+  'harvesting.card.note': 'નોંધ:',
   'harvesting.summary.hours': 'કલાક:',
   'harvesting.summary.total': 'કુલ:',
   'harvesting.summary.pending': 'બાકી:',
