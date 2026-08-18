@@ -39,8 +39,9 @@ export function vaadiRollup(vaadi: Vaadi, paks: Pak[]) {
   const cost = Math.round(vaadiPaks.reduce((s, p) => s + p.expenses.reduce((a, e) => a + e.amount, 0), 0) * 100) / 100;
   const revenue = Math.round(vaadiPaks.reduce((s, p) => s + p.yieldQty * p.pricePerUnit, 0) * 100) / 100;
   const profit = Math.round((revenue - cost) * 100) / 100;
-  const partnerShares = vaadi.partners.map((p) => ({
+  const partnerShares = vaadi.partners.map((p, i) => ({
     ...p,
+    id: p.id || `legacy-${vaadi.id}-${i}`,
     amount: Math.round((profit * p.sharePercent) / 100 * 100) / 100,
   }));
   return { pakCount: vaadiPaks.length, cost, revenue, profit, partnerShares };

@@ -15,7 +15,7 @@ import { useAdminUI } from '@/components/AdminUI';
 import { useLanguage } from '@/lib/i18n';
 import '../admin.css';
 
-const EMPTY_PARTNER: VaadiPartner = { id: '', name: '', sharePercent: 0 };
+const newPartner = (): VaadiPartner => ({ id: crypto.randomUUID(), name: '', sharePercent: 0 });
 
 const EMPTY_WITHDRAWAL = {
   amount: 0,
@@ -25,11 +25,11 @@ const EMPTY_WITHDRAWAL = {
   refId: '',
 };
 
-const EMPTY_VAADI = {
+const newVaadiForm = () => ({
   name: '',
-  partners: [{ ...EMPTY_PARTNER }] as VaadiPartner[],
+  partners: [newPartner()] as VaadiPartner[],
   note: '',
-};
+});
 
 export default function VaadisAdmin() {
   const { t } = useLanguage();
@@ -37,7 +37,7 @@ export default function VaadisAdmin() {
   const { vaadis, loading } = useVaadis();
   const { paks } = usePaks();
   const { withdrawals } = usePartnerWithdrawals();
-  const [form, setForm] = useState(EMPTY_VAADI);
+  const [form, setForm] = useState(newVaadiForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [withdrawFor, setWithdrawFor] = useState<{ vaadiId: string; partnerId: string; partnerName: string } | null>(null);
@@ -53,14 +53,14 @@ export default function VaadisAdmin() {
     setEditingId(vaadi.id);
     setForm({
       name: vaadi.name,
-      partners: vaadi.partners.length ? vaadi.partners.map((p) => ({ ...p })) : [{ ...EMPTY_PARTNER }],
+      partners: vaadi.partners.length ? vaadi.partners.map((p) => ({ ...p, id: p.id || crypto.randomUUID() })) : [newPartner()],
       note: vaadi.note,
     });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setForm({ ...EMPTY_VAADI, partners: [{ ...EMPTY_PARTNER }] });
+    setForm(newVaadiForm());
   };
 
   const updatePartner = (index: number, field: keyof VaadiPartner, value: string) => {
@@ -72,7 +72,8 @@ export default function VaadisAdmin() {
     });
   };
 
-  const addPartnerRow = () => setForm({ ...form, partners: [...form.partners, { ...EMPTY_PARTNER }] });
+  const addPartnerRow = () =>
+    setForm({ ...form, partners: [...form.partners, newPartner()] });
 
   const removePartnerRow = (index: number) =>
     setForm({ ...form, partners: form.partners.filter((_, i) => i !== index) });
