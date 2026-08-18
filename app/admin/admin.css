@@ -822,6 +822,10 @@ input:focus, select:focus, textarea:focus {
     align-items: stretch;
   }
 
+  .admin-card-body {
+    flex-basis: auto;
+  }
+
   .admin-card-thumb,
   .admin-card-emoji {
     align-self: flex-start;
