@@ -57,22 +57,22 @@ export default function ProduceAdmin() {
   };
 
   return (
-    <div style={{ maxWidth: 720 }}>
-      <h1 style={{ fontSize: 22, marginBottom: 16 }}>{t('produce.title')}</h1>
+    <div>
+      <h1 className="admin-page-title">{t('produce.title')}</h1>
 
-      <form onSubmit={onSubmit} style={{ background: '#fff', padding: 20, borderRadius: 10, marginBottom: 24, display: 'grid', gap: 10 }}>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <input placeholder={t('produce.placeholder.emoji')} value={form.emoji} onChange={(e) => setForm({ ...form, emoji: e.target.value })} required style={{ width: 60, padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
-          <input placeholder={t('produce.placeholder.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required style={{ flex: 1, padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
-          <input placeholder={t('produce.placeholder.tag')} value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} required style={{ width: 140, padding: 8, border: '1px solid #ddd', borderRadius: 6 }} />
+      <form onSubmit={onSubmit} className="admin-form">
+        <div className="admin-form-row">
+          <input placeholder={t('produce.placeholder.emoji')} value={form.emoji} onChange={(e) => setForm({ ...form, emoji: e.target.value })} required className="admin-emoji-input" />
+          <input placeholder={t('produce.placeholder.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          <input placeholder={t('produce.placeholder.tag')} value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} required />
         </div>
-        <textarea placeholder={t('produce.placeholder.description')} value={form.desc} onChange={(e) => setForm({ ...form, desc: e.target.value })} required rows={2} style={{ padding: 8, border: '1px solid #ddd', borderRadius: 6, fontFamily: 'inherit' }} />
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button type="submit" disabled={busy} style={{ padding: '8px 16px', background: '#2e5339', color: '#fff', border: 0, borderRadius: 6, cursor: 'pointer' }}>
+        <textarea placeholder={t('produce.placeholder.description')} value={form.desc} onChange={(e) => setForm({ ...form, desc: e.target.value })} required rows={2} />
+        <div className="admin-form-actions">
+          <button type="submit" disabled={busy} className="btn btn-primary">
             {editingId ? t('produce.update') : t('produce.add')}
           </button>
           {editingId && (
-            <button type="button" onClick={cancelEdit} style={{ padding: '8px 16px', background: '#fff', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer' }}>
+            <button type="button" onClick={cancelEdit} className="btn btn-secondary">
               {t('produce.cancel')}
             </button>
           )}
@@ -80,7 +80,7 @@ export default function ProduceAdmin() {
       </form>
 
       {!loading && items.length === 0 && (
-        <button type="button" onClick={seedDefaults} disabled={seeding} style={{ marginBottom: 16, padding: '8px 16px', background: '#fff', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer' }}>
+        <button type="button" onClick={seedDefaults} disabled={seeding} className="btn btn-secondary admin-seed-btn">
           {seeding ? t('produce.seeding') : t('produce.seedDefaults')}
         </button>
       )}
@@ -88,16 +88,18 @@ export default function ProduceAdmin() {
       {loading ? (
         <p>{t('produce.loading')}</p>
       ) : (
-        <div style={{ display: 'grid', gap: 10 }}>
+        <div className="admin-list">
           {items.map((item) => (
-            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', padding: 12, borderRadius: 8 }}>
-              <span style={{ fontSize: 24 }}>{item.emoji}</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600 }}>{item.name} <span style={{ fontWeight: 400, color: '#888', fontSize: 12 }}>({item.tag})</span></div>
-                <div style={{ fontSize: 13, color: '#666' }}>{item.desc}</div>
+            <div key={item.id} className="admin-card">
+              <span className="admin-card-emoji">{item.emoji}</span>
+              <div className="admin-card-body">
+                <div className="admin-card-title">{item.name} <span className="sub">({item.tag})</span></div>
+                <div className="admin-card-desc">{item.desc}</div>
               </div>
-              <button type="button" onClick={() => startEdit(item)} style={{ padding: '6px 12px', border: '1px solid #ddd', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>{t('produce.edit')}</button>
-              <button type="button" onClick={() => onDelete(item.id)} style={{ padding: '6px 12px', border: '1px solid #f0c4c4', color: '#c0392b', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>{t('produce.delete')}</button>
+              <div className="admin-card-actions">
+                <button type="button" onClick={() => startEdit(item)} className="btn btn-secondary btn-sm">{t('produce.edit')}</button>
+                <button type="button" onClick={() => onDelete(item.id)} className="btn btn-danger btn-sm">{t('produce.delete')}</button>
+              </div>
             </div>
           ))}
         </div>
