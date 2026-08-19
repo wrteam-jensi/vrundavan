@@ -16,14 +16,20 @@ const NAV_LINKS: { href: string; labelKey: DictKey; icon: string }[] = [
   { href: '/admin/farmers', labelKey: 'layout.nav.farmers', icon: '👨‍🌾' },
   { href: '/admin/pak', labelKey: 'layout.nav.pak', icon: '🌱' },
   { href: '/admin/vaadis', labelKey: 'layout.nav.vaadis', icon: '🏞️' },
+  { href: '/admin/crops', labelKey: 'layout.nav.crops', icon: '🥕' },
+  { href: '/admin/fruits', labelKey: 'layout.nav.fruits', icon: '🍎' },
 ];
+
+// first 4 pin to the mobile bottom bar; rest live behind "More"
+const TAB_BAR_LINKS = NAV_LINKS.slice(0, 4);
+const MORE_LINKS = NAV_LINKS.slice(4);
 
 function AdminShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const isLoginPage = pathname === '/admin/login';
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const online = useOnlineStatus();
   const { lang, setLang, t } = useLanguage();
@@ -35,7 +41,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
   }, [user, loading, isLoginPage, router]);
 
   useEffect(() => {
-    setMenuOpen(false);
+    setMoreOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -50,20 +56,14 @@ function AdminShell({ children }: { children: React.ReactNode }) {
     return <div className="admin-loading">{t('layout.loading')}</div>;
   }
 
+  const isMoreActive = MORE_LINKS.some((link) => link.href === pathname);
+
   return (
     <AdminUIProvider>
       <div className="admin-root">
         <header className={`admin-header${scrolled ? ' scrolled' : ''}`}>
           <span className="admin-brand">🌱 {t('layout.brand')}</span>
-          <button
-            type="button"
-            className="admin-menu-toggle"
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-label={t('layout.toggleMenu')}
-          >
-            {menuOpen ? '✕' : '☰'}
-          </button>
-          <nav className={`admin-nav${menuOpen ? ' open' : ''}`}>
+          <nav className="admin-nav">
             {NAV_LINKS.map((link) => (
               <a key={link.href} href={link.href} className={pathname === link.href ? 'active' : ''}>
                 <span aria-hidden="true">{link.icon}</span> {t(link.labelKey)}
@@ -83,6 +83,43 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         </header>
         {!online && <div className="admin-offline-banner">{t('layout.offline')}</div>}
         <main className="admin-main">{children}</main>
+
+        <nav className="admin-tabbar">
+          {TAB_BAR_LINKS.map((link) => (
+            <a key={link.href} href={link.href} className={pathname === link.href ? 'active' : ''}>
+              <span aria-hidden="true">{link.icon}</span>
+              <span>{t(link.labelKey)}</span>
+            </a>
+          ))}
+          <button
+            type="button"
+            className={isMoreActive ? 'active' : ''}
+            onClick={() => setMoreOpen(true)}
+          >
+            <span aria-hidden="true">⋯</span>
+            <span>{t('layout.more')}</span>
+          </button>
+        </nav>
+
+        {moreOpen && (
+          <div className="admin-sheet-backdrop" onClick={() => setMoreOpen(false)}>
+            <div className="admin-sheet" onClick={(e) => e.stopPropagation()}>
+              <div className="admin-sheet-handle" />
+              {MORE_LINKS.map((link) => (
+                <a key={link.href} href={link.href} className={pathname === link.href ? 'active' : ''}>
+                  <span aria-hidden="true">{link.icon}</span> {t(link.labelKey)}
+                </a>
+              ))}
+              <div className="admin-sheet-divider" />
+              <button type="button" onClick={() => setLang(lang === 'en' ? 'gu' : 'en')}>
+                <span aria-hidden="true">🌐</span> {t('layout.langToggle')}
+              </button>
+              <button type="button" className="danger" onClick={() => signOut(auth)}>
+                <span aria-hidden="true">🚪</span> {t('layout.signOut')}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </AdminUIProvider>
   );

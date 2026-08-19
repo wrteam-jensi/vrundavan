@@ -9,6 +9,9 @@ export const gu: Record<keyof typeof en, string> = {
   'layout.nav.farmers': 'ખેડૂતો',
   'layout.nav.pak': 'પાક',
   'layout.nav.vaadis': 'વાડીઓ',
+  'layout.nav.crops': 'પાક વસ્તુઓ',
+  'layout.nav.fruits': 'ફળો',
+  'layout.more': 'વધુ',
   'layout.signOut': 'સાઇન આઉટ',
   'layout.loading': 'લોડ થાય છે…',
   'layout.offline': '📡 ઓફલાઇન — ફરી ઓનલાઇન થશો ત્યારે ફેરફારો સિંક થશે',
@@ -41,6 +44,13 @@ export const gu: Record<keyof typeof en, string> = {
   'dashboard.recentHarvestingEntries': 'તાજેતરની હાર્વેસ્ટિંગ એન્ટ્રી',
   'dashboard.whatsapp': 'વોટ્સએપ',
   'dashboard.noEntriesYet': 'હજુ કોઈ એન્ટ્રી નથી.',
+  'dashboard.quickActions': 'ઝડપી ક્રિયાઓ',
+  'dashboard.quick.harvesting': 'હાર્વેસ્ટિંગ ઉમેરો',
+  'dashboard.quick.farmers': 'ખેડૂત ઉમેરો',
+  'dashboard.quick.pak': 'પાક ઉમેરો',
+  'dashboard.quick.vaadis': 'વાડી ઉમેરો',
+  'dashboard.quick.crops': 'પાક વસ્તુઓ સંભાળો',
+  'dashboard.quick.fruits': 'ફળો સંભાળો',
 
   // produce
   'produce.title': 'ઉત્પાદન કેટેગરી',

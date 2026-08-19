@@ -49,6 +49,27 @@ export default function Dashboard() {
     <div>
       <h1 className="admin-page-title">{t('dashboard.title')}</h1>
 
+      <div className="admin-quick-actions">
+        <a href="/admin/harvesting" className="admin-quick-action">
+          <span aria-hidden="true">🌾</span> {t('dashboard.quick.harvesting')}
+        </a>
+        <a href="/admin/farmers" className="admin-quick-action">
+          <span aria-hidden="true">👨‍🌾</span> {t('dashboard.quick.farmers')}
+        </a>
+        <a href="/admin/pak" className="admin-quick-action">
+          <span aria-hidden="true">🌱</span> {t('dashboard.quick.pak')}
+        </a>
+        <a href="/admin/vaadis" className="admin-quick-action">
+          <span aria-hidden="true">🏞️</span> {t('dashboard.quick.vaadis')}
+        </a>
+        <a href="/admin/crops" className="admin-quick-action">
+          <span aria-hidden="true">🥕</span> {t('dashboard.quick.crops')}
+        </a>
+        <a href="/admin/fruits" className="admin-quick-action">
+          <span aria-hidden="true">🍎</span> {t('dashboard.quick.fruits')}
+        </a>
+      </div>
+
       {loading ? (
         <SkeletonList rows={2} />
       ) : (

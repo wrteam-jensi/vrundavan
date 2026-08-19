@@ -7,6 +7,9 @@ export const en = {
   'layout.nav.farmers': 'Farmers',
   'layout.nav.pak': 'Pak',
   'layout.nav.vaadis': 'Vaadis',
+  'layout.nav.crops': 'Crops',
+  'layout.nav.fruits': 'Fruits',
+  'layout.more': 'More',
   'layout.signOut': 'Sign Out',
   'layout.loading': 'Loading…',
   'layout.offline': '📡 Offline — changes will sync when back online',
@@ -39,6 +42,13 @@ export const en = {
   'dashboard.recentHarvestingEntries': 'Recent Harvesting Entries',
   'dashboard.whatsapp': 'WhatsApp',
   'dashboard.noEntriesYet': 'No entries yet.',
+  'dashboard.quickActions': 'Quick Actions',
+  'dashboard.quick.harvesting': 'Add Harvesting',
+  'dashboard.quick.farmers': 'Add Farmer',
+  'dashboard.quick.pak': 'Add Pak',
+  'dashboard.quick.vaadis': 'Add Vaadi',
+  'dashboard.quick.crops': 'Manage Crops',
+  'dashboard.quick.fruits': 'Manage Fruits',
 
   // produce (app/admin/page.tsx)
   'produce.title': 'Produce Categories',
