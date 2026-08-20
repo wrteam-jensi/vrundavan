@@ -1051,6 +1051,7 @@ input:focus, select:focus, textarea:focus {
     justify-content: center;
     position: fixed;
     inset: 0;
+    padding: 0 12px calc(12px + env(safe-area-inset-bottom));
     background: rgba(15, 20, 15, 0.4);
     z-index: 40;
   }
@@ -1058,8 +1059,8 @@ input:focus, select:focus, textarea:focus {
   .admin-sheet {
     width: 100%;
     background: var(--admin-surface);
-    border-radius: 20px 20px 0 0;
-    padding: 10px 14px calc(16px + env(safe-area-inset-bottom));
+    border-radius: 20px;
+    padding: 10px 14px 16px;
     box-shadow: var(--admin-shadow-lg);
     display: flex;
     flex-direction: column;
