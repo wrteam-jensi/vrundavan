@@ -767,7 +767,7 @@ input:focus, select:focus, textarea:focus {
 
 @media (max-width: 720px) {
   .admin-main {
-    padding: 16px;
+    padding: 16px 16px calc(72px + env(safe-area-inset-bottom));
   }
 
   .admin-form-row {
