@@ -16,8 +16,6 @@ const NAV_LINKS: { href: string; labelKey: DictKey; icon: string }[] = [
   { href: '/admin/farmers', labelKey: 'layout.nav.farmers', icon: '👨‍🌾' },
   { href: '/admin/pak', labelKey: 'layout.nav.pak', icon: '🌱' },
   { href: '/admin/vaadis', labelKey: 'layout.nav.vaadis', icon: '🏞️' },
-  { href: '/admin/crops', labelKey: 'layout.nav.crops', icon: '🥕' },
-  { href: '/admin/fruits', labelKey: 'layout.nav.fruits', icon: '🍎' },
 ];
 
 // first 4 pin to the mobile bottom bar; rest live behind "More"
