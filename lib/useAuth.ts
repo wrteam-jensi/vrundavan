@@ -7,7 +7,7 @@ import { auth } from './firebase';
 export function useAuth() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
 
-  useEffect(() => onAuthStateChanged(auth, setUser), []);
+  useEffect(() => onAuthStateChanged(auth, setUser, () => setUser(null)), []);
 
   return { user, loading: user === undefined };
 }
