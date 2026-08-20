@@ -23,32 +23,44 @@ service cloud.firestore {
 
     // Admin-only operational data — scoped to the owning admin.
     match /vaadis/{docId} {
-      allow read, update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      // TEMP: read opened for owner backfill migration — revert to ownerId-scoped read after backfill.
+      allow read: if request.auth != null;
+      allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
     }
 
     match /paks/{docId} {
-      allow read, update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      // TEMP: read opened for owner backfill migration — revert to ownerId-scoped read after backfill.
+      allow read: if request.auth != null;
+      allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
     }
 
     match /partnerWithdrawals/{docId} {
-      allow read, update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      // TEMP: read opened for owner backfill migration — revert to ownerId-scoped read after backfill.
+      allow read: if request.auth != null;
+      allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
     }
 
     match /farmers/{docId} {
-      allow read, update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      // TEMP: read opened for owner backfill migration — revert to ownerId-scoped read after backfill.
+      allow read: if request.auth != null;
+      allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
     }
 
     match /harvestEntries/{docId} {
-      allow read, update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      // TEMP: read opened for owner backfill migration — revert to ownerId-scoped read after backfill.
+      allow read: if request.auth != null;
+      allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
     }
 
     match /farmCrops/{docId} {
-      allow read, update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      // TEMP: read opened for owner backfill migration — revert to ownerId-scoped read after backfill.
+      allow read: if request.auth != null;
+      allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
     }
 
