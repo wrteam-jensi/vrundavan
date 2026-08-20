@@ -1,5 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import ChunkErrorReload from '@/components/ChunkErrorReload';
 
 export const metadata: Metadata = {
   title: 'Vrundavan Farm — Natural Fruits & Vegetables',
@@ -29,7 +30,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body>{children}</body>
+      <body>
+        <ChunkErrorReload />
+        {children}
+      </body>
     </html>
   );
 }
