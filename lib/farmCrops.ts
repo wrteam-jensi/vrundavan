@@ -1,6 +1,7 @@
-import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { db } from './firebase';
+import { auth, db } from './firebase';
+import { requireOwnerId } from './ownerId';
 import type { FarmCropEntry } from './types';
 
 export function useFarmCropEntries() {
@@ -8,21 +9,34 @@ export function useFarmCropEntries() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(collection(db, 'farmCrops'), orderBy('createdAt', 'desc'));
-    return onSnapshot(q, (snap) => {
-      setEntries(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as FarmCropEntry[]);
-      setLoading(false);
+    let unsubSnap: (() => void) | undefined;
+    const unsubAuth = auth.onAuthStateChanged((user) => {
+      unsubSnap?.();
+      if (!user) {
+        setEntries([]);
+        setLoading(false);
+        return;
+      }
+      const q = query(collection(db, 'farmCrops'), where('ownerId', '==', user.uid), orderBy('createdAt', 'desc'));
+      unsubSnap = onSnapshot(q, (snap) => {
+        setEntries(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as FarmCropEntry[]);
+        setLoading(false);
+      });
     });
+    return () => {
+      unsubSnap?.();
+      unsubAuth();
+    };
   }, []);
 
   return { entries, loading };
 }
 
-export async function createFarmCropEntry(data: Omit<FarmCropEntry, 'id'>) {
-  await addDoc(collection(db, 'farmCrops'), data);
+export async function createFarmCropEntry(data: Omit<FarmCropEntry, 'id' | 'ownerId'>) {
+  await addDoc(collection(db, 'farmCrops'), { ...data, ownerId: requireOwnerId() });
 }
 
-export async function updateFarmCropEntry(id: string, data: Omit<FarmCropEntry, 'id'>) {
+export async function updateFarmCropEntry(id: string, data: Omit<FarmCropEntry, 'id' | 'ownerId'>) {
   await updateDoc(doc(db, 'farmCrops', id), data);
 }
 

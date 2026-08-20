@@ -15,6 +15,7 @@ export interface Settings {
 
 export interface Farmer {
   id: string;
+  ownerId: string;
   name: string;
   mobile: string;
   village: string;
@@ -23,6 +24,7 @@ export interface Farmer {
 
 export interface HarvestEntry {
   id: string;
+  ownerId: string;
   farmerId: string;
   farmerName: string;
   farmerMobile: string;
@@ -41,6 +43,7 @@ export interface HarvestEntry {
 
 export interface FarmCropEntry {
   id: string;
+  ownerId: string;
   cropName: string;
   seedQty: number;
   seedUnit: string;
@@ -80,6 +83,7 @@ export interface VaadiPartner {
 
 export interface Vaadi {
   id: string;
+  ownerId: string;
   name: string;
   partners: VaadiPartner[];
   note: string;
@@ -88,6 +92,7 @@ export interface Vaadi {
 
 export interface PartnerWithdrawal {
   id: string;
+  ownerId: string;
   vaadiId: string;
   partnerId: string;
   partnerName: string;
@@ -101,6 +106,7 @@ export interface PartnerWithdrawal {
 
 export interface Pak {
   id: string;
+  ownerId: string;
   vaadiId: string;
   cropName: string;
   plantedDate: string; // YYYY-MM-DD, vavayo

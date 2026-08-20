@@ -1,6 +1,7 @@
-import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { db } from './firebase';
+import { auth, db } from './firebase';
+import { requireOwnerId } from './ownerId';
 import type { Pak, Vaadi, VaadiPartner } from './types';
 
 export function useVaadis() {
@@ -8,11 +9,24 @@ export function useVaadis() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(collection(db, 'vaadis'), orderBy('name', 'asc'));
-    return onSnapshot(q, (snap) => {
-      setVaadis(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Vaadi[]);
-      setLoading(false);
+    let unsubSnap: (() => void) | undefined;
+    const unsubAuth = auth.onAuthStateChanged((user) => {
+      unsubSnap?.();
+      if (!user) {
+        setVaadis([]);
+        setLoading(false);
+        return;
+      }
+      const q = query(collection(db, 'vaadis'), where('ownerId', '==', user.uid), orderBy('name', 'asc'));
+      unsubSnap = onSnapshot(q, (snap) => {
+        setVaadis(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Vaadi[]);
+        setLoading(false);
+      });
     });
+    return () => {
+      unsubSnap?.();
+      unsubAuth();
+    };
   }, []);
 
   return { vaadis, loading };
@@ -22,11 +36,11 @@ function withPartnerIds(partners: VaadiPartner[]) {
   return partners.map((p) => ({ ...p, id: p.id || crypto.randomUUID() }));
 }
 
-export async function createVaadi(data: Omit<Vaadi, 'id'>) {
-  await addDoc(collection(db, 'vaadis'), { ...data, partners: withPartnerIds(data.partners) });
+export async function createVaadi(data: Omit<Vaadi, 'id' | 'ownerId'>) {
+  await addDoc(collection(db, 'vaadis'), { ...data, partners: withPartnerIds(data.partners), ownerId: requireOwnerId() });
 }
 
-export async function updateVaadi(id: string, data: Omit<Vaadi, 'id'>) {
+export async function updateVaadi(id: string, data: Omit<Vaadi, 'id' | 'ownerId'>) {
   await updateDoc(doc(db, 'vaadis', id), { ...data, partners: withPartnerIds(data.partners) });
 }
 

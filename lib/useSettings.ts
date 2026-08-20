@@ -2,24 +2,33 @@
 
 import { useEffect, useState } from 'react';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
-import { db } from './firebase';
-
-const SETTINGS_REF = () => doc(db, 'settings', 'rate');
+import { auth, db } from './firebase';
+import { requireOwnerId } from './ownerId';
 
 export function useRatePerHour() {
   const [ratePerHour, setRatePerHour] = useState<number | null>(null);
 
-  useEffect(
-    () =>
-      onSnapshot(SETTINGS_REF(), (snap) => {
+  useEffect(() => {
+    let unsubSnap: (() => void) | undefined;
+    const unsubAuth = auth.onAuthStateChanged((user) => {
+      unsubSnap?.();
+      if (!user) {
+        setRatePerHour(null);
+        return;
+      }
+      unsubSnap = onSnapshot(doc(db, 'settings', user.uid), (snap) => {
         setRatePerHour(snap.exists() ? (snap.data().ratePerHour ?? 0) : 0);
-      }),
-    []
-  );
+      });
+    });
+    return () => {
+      unsubSnap?.();
+      unsubAuth();
+    };
+  }, []);
 
   return ratePerHour;
 }
 
 export async function updateRatePerHour(rate: number) {
-  await setDoc(SETTINGS_REF(), { ratePerHour: rate });
+  await setDoc(doc(db, 'settings', requireOwnerId()), { ratePerHour: rate });
 }

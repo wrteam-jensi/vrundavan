@@ -7,10 +7,12 @@ import {
   orderBy,
   query,
   updateDoc,
+  where,
   writeBatch,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { db } from './firebase';
+import { auth, db } from './firebase';
+import { requireOwnerId } from './ownerId';
 import type { Farmer, HarvestEntry } from './types';
 
 export function hoursBetween(startTime: string, endTime: string) {
@@ -27,11 +29,24 @@ export function useFarmers() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(collection(db, 'farmers'), orderBy('name', 'asc'));
-    return onSnapshot(q, (snap) => {
-      setFarmers(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Farmer[]);
-      setLoading(false);
+    let unsubSnap: (() => void) | undefined;
+    const unsubAuth = auth.onAuthStateChanged((user) => {
+      unsubSnap?.();
+      if (!user) {
+        setFarmers([]);
+        setLoading(false);
+        return;
+      }
+      const q = query(collection(db, 'farmers'), where('ownerId', '==', user.uid), orderBy('name', 'asc'));
+      unsubSnap = onSnapshot(q, (snap) => {
+        setFarmers(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Farmer[]);
+        setLoading(false);
+      });
     });
+    return () => {
+      unsubSnap?.();
+      unsubAuth();
+    };
   }, []);
 
   return { farmers, loading };
@@ -42,21 +57,34 @@ export function useHarvestEntries() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(collection(db, 'harvestEntries'), orderBy('createdAt', 'desc'));
-    return onSnapshot(q, (snap) => {
-      setEntries(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as HarvestEntry[]);
-      setLoading(false);
+    let unsubSnap: (() => void) | undefined;
+    const unsubAuth = auth.onAuthStateChanged((user) => {
+      unsubSnap?.();
+      if (!user) {
+        setEntries([]);
+        setLoading(false);
+        return;
+      }
+      const q = query(collection(db, 'harvestEntries'), where('ownerId', '==', user.uid), orderBy('createdAt', 'desc'));
+      unsubSnap = onSnapshot(q, (snap) => {
+        setEntries(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as HarvestEntry[]);
+        setLoading(false);
+      });
     });
+    return () => {
+      unsubSnap?.();
+      unsubAuth();
+    };
   }, []);
 
   return { entries, loading };
 }
 
-export async function createFarmer(data: Omit<Farmer, 'id'>) {
-  await addDoc(collection(db, 'farmers'), data);
+export async function createFarmer(data: Omit<Farmer, 'id' | 'ownerId'>) {
+  await addDoc(collection(db, 'farmers'), { ...data, ownerId: requireOwnerId() });
 }
 
-export async function updateFarmer(id: string, data: Omit<Farmer, 'id'>) {
+export async function updateFarmer(id: string, data: Omit<Farmer, 'id' | 'ownerId'>) {
   await updateDoc(doc(db, 'farmers', id), data);
 }
 
@@ -64,11 +92,11 @@ export async function deleteFarmer(id: string) {
   await deleteDoc(doc(db, 'farmers', id));
 }
 
-export async function createHarvestEntry(data: Omit<HarvestEntry, 'id'>) {
-  await addDoc(collection(db, 'harvestEntries'), data);
+export async function createHarvestEntry(data: Omit<HarvestEntry, 'id' | 'ownerId'>) {
+  await addDoc(collection(db, 'harvestEntries'), { ...data, ownerId: requireOwnerId() });
 }
 
-export async function updateHarvestEntry(id: string, data: Omit<HarvestEntry, 'id'>) {
+export async function updateHarvestEntry(id: string, data: Omit<HarvestEntry, 'id' | 'ownerId'>) {
   await updateDoc(doc(db, 'harvestEntries', id), data);
 }
 
