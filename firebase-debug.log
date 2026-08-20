@@ -1,0 +1,22 @@
+[debug] [2026-08-20T10:31:45.328Z] ----------------------------------------------------------------------
+[debug] [2026-08-20T10:31:45.330Z] Command:       /usr/local/bin/node /Users/jnc/.npm/_npx/7750544ccf494d8b/node_modules/.bin/firebase firestore:indexes --project vrundavan-6f568
+[debug] [2026-08-20T10:31:45.330Z] CLI Version:   15.28.1
+[debug] [2026-08-20T10:31:45.330Z] Platform:      darwin
+[debug] [2026-08-20T10:31:45.330Z] Node Version:  v24.13.0
+[debug] [2026-08-20T10:31:45.330Z] Detected Agent: claude-code_2-1-237_agent
+[debug] [2026-08-20T10:31:45.330Z] Time:          Thu Aug 20 2026 16:01:45 GMT+0530 (India Standard Time)
+[debug] [2026-08-20T10:31:45.330Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-08-20T10:31:45.928Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-08-20T10:31:45.928Z] > authorizing via signed-in user (wrteam.jensibhudiya@gmail.com)
+[debug] [2026-08-20T10:31:45.928Z] [iam] checking project vrundavan-6f568 for permissions ["datastore.indexes.list","firebase.projects.get"]
+[debug] [2026-08-20T10:31:45.939Z] Checked if tokens are valid: true, expires at: 1787224807012
+[debug] [2026-08-20T10:31:45.939Z] Checked if tokens are valid: true, expires at: 1787224807012
+[debug] [2026-08-20T10:31:45.940Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/vrundavan-6f568:testIamPermissions [none]
+[debug] [2026-08-20T10:31:45.940Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/vrundavan-6f568:testIamPermissions  x-goog-user-project=vrundavan-6f568
+[debug] [2026-08-20T10:31:45.940Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/vrundavan-6f568:testIamPermissions {"permissions":["datastore.indexes.list","firebase.projects.get"]}
+[debug] [2026-08-20T10:31:46.303Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/vrundavan-6f568:testIamPermissions 200
+[debug] [2026-08-20T10:31:46.304Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/vrundavan-6f568:testIamPermissions {"permissions":["datastore.indexes.list","firebase.projects.get"]}
+[debug] [2026-08-20T10:31:46.304Z] Checked if tokens are valid: true, expires at: 1787224807012
+[debug] [2026-08-20T10:31:46.304Z] Checked if tokens are valid: true, expires at: 1787224807012
+[debug] [2026-08-20T10:31:46.304Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/vrundavan-6f568/databases/(default)/collectionGroups/-/indexes [none]

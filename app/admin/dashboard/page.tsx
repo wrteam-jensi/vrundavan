@@ -62,12 +62,6 @@ export default function Dashboard() {
         <a href="/admin/vaadis" className="admin-quick-action">
           <span aria-hidden="true">🏞️</span> {t('dashboard.quick.vaadis')}
         </a>
-        <a href="/admin/crops" className="admin-quick-action">
-          <span aria-hidden="true">🥕</span> {t('dashboard.quick.crops')}
-        </a>
-        <a href="/admin/fruits" className="admin-quick-action">
-          <span aria-hidden="true">🍎</span> {t('dashboard.quick.fruits')}
-        </a>
       </div>
 
       {loading ? (
