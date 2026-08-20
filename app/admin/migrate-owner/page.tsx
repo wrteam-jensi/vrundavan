@@ -24,26 +24,34 @@ export default function MigrateOwnerPage() {
     setLog([`Backfilling ownerId = ${uid}`]);
 
     for (const name of OWNED_COLLECTIONS) {
-      const snap = await getDocs(collection(db, name));
-      const missing = snap.docs.filter((d) => !d.data().ownerId);
-      let updated = 0;
-      for (let i = 0; i < missing.length; i += BATCH_SIZE) {
-        const batch = writeBatch(db);
-        for (const d of missing.slice(i, i + BATCH_SIZE)) {
-          batch.update(doc(db, name, d.id), { ownerId: uid });
-          updated++;
+      try {
+        const snap = await getDocs(collection(db, name));
+        const missing = snap.docs.filter((d) => !d.data().ownerId);
+        let updated = 0;
+        for (let i = 0; i < missing.length; i += BATCH_SIZE) {
+          const batch = writeBatch(db);
+          for (const d of missing.slice(i, i + BATCH_SIZE)) {
+            batch.update(doc(db, name, d.id), { ownerId: uid });
+            updated++;
+          }
+          await batch.commit();
         }
-        await batch.commit();
+        append(`${name}: ${updated} updated, ${snap.size - missing.length} already had ownerId`);
+      } catch (err) {
+        append(`${name}: FAILED — ${err instanceof Error ? err.message : String(err)}`);
       }
-      append(`${name}: ${updated} updated, ${snap.size - missing.length} already had ownerId`);
     }
 
-    const oldSettings = await getDoc(doc(db, 'settings', 'rate'));
-    if (oldSettings.exists()) {
-      await setDoc(doc(db, 'settings', uid), { ratePerHour: oldSettings.data().ratePerHour ?? 0 });
-      append(`settings: copied ratePerHour into settings/${uid}`);
-    } else {
-      append('settings: no legacy settings/rate doc found, skipped');
+    try {
+      const oldSettings = await getDoc(doc(db, 'settings', 'rate'));
+      if (oldSettings.exists()) {
+        await setDoc(doc(db, 'settings', uid), { ratePerHour: oldSettings.data().ratePerHour ?? 0 });
+        append(`settings: copied ratePerHour into settings/${uid}`);
+      } else {
+        append('settings: no legacy settings/rate doc found, skipped');
+      }
+    } catch {
+      append('settings: could not read legacy settings/rate (rules already scoped) — set the rate manually on the Harvesting page instead');
     }
 
     append('Done.');
