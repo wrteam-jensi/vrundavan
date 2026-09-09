@@ -375,4 +375,34 @@ export const gu: Record<keyof typeof en, string> = {
 
   // yearly comparison
   'yearlyComparison.title': '{lastYear} વિરુદ્ધ {thisYear} નફા સરખામણી',
+
+  // shops
+  'shops.title': 'દુકાનો',
+  'shops.field.name': 'દુકાનનું નામ',
+  'shops.field.village': 'ગામ / વિસ્તાર',
+  'shops.field.mobile': 'મોબાઇલ',
+  'shops.field.note': 'નોંધ',
+  'shops.update': 'અપડેટ',
+  'shops.addShop': 'દુકાન ઉમેરો',
+  'shops.cancel': 'રદ કરો',
+  'shops.searchPlaceholder': 'દુકાન અથવા ગામ પ્રમાણે શોધો…',
+  'shops.sortName': 'સોર્ટ: નામ',
+  'shops.sortSpent': 'સોર્ટ: કુલ ખર્ચ',
+  'shops.stat.shops': 'દુકાનો',
+  'shops.stat.totalSpent': 'કુલ ખર્ચ',
+  'shops.purchaseCount': '{count} ખરીદી',
+  'shops.viewPurchases': 'ખરીદી જુઓ',
+  'shops.hidePurchases': 'ખરીદી છુપાવો',
+  'shops.edit': 'એડિટ',
+  'shops.delete': 'ડિલીટ',
+  'shops.empty': 'હજુ કોઈ દુકાન નથી. બિયારણ, ખાતર અને દવા લેવાની દુકાનો ઉમેરો.',
+  'shops.undo': 'પૂર્વવત્ કરો',
+  'shops.toast.updated': 'દુકાન અપડેટ થઈ.',
+  'shops.toast.added': 'દુકાન ઉમેરાઈ.',
+  'shops.toast.deleted': 'દુકાન ડિલીટ થઈ.',
+  'shops.toast.restored': 'દુકાન પાછી આવી.',
+  'shops.toast.error': 'કંઈક ખોટું થયું. ફરી પ્રયત્ન કરો.',
+  'shops.confirm.delete': '{name} ડિલીટ કરવી છે?',
+  'shops.confirm.deleteWithPurchases':
+    '{name} ડિલીટ કરવી છે? {count} નોંધાયેલ ખરીદી દુકાનનું નામ રાખશે પણ દુકાન રેકોર્ડ સાથે લિંક નહીં રહે.',
 };

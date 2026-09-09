@@ -52,6 +52,11 @@ service cloud.firestore {
       allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
     }
 
+    match /shops/{docId} {
+      allow read, update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
+    }
+
     // Deny anything not explicitly matched above.
     match /{document=**} {
       allow read, write: if false;
