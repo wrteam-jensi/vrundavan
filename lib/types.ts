@@ -73,6 +73,19 @@ export interface PakExpense {
   category: ExpenseCategory;
   amount: number;
   note: string;
+  shopId: string; // '' when the expense was not tied to a shop
+  shopName: string; // denormalised so old entries keep their label if a shop is renamed
+  itemName: string; // what was actually bought
+}
+
+export interface Shop {
+  id: string;
+  ownerId: string;
+  name: string;
+  village: string;
+  mobile: string;
+  note: string;
+  createdAt: number;
 }
 
 export interface VaadiPartner {

@@ -3,6 +3,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { createPak, deletePak, updatePak, usePaks } from '@/lib/paks';
 import { useVaadis } from '@/lib/vaadis';
+import { useShops } from '@/lib/shops';
 import { downloadCsv } from '@/lib/csvExport';
 import type { ExpenseCategory, Pak, PakExpense } from '@/lib/types';
 import SkeletonList from '@/components/SkeletonList';
@@ -34,6 +35,9 @@ const EMPTY_EXPENSE = {
   category: 'seed' as ExpenseCategory,
   amount: 0,
   note: '',
+  shopId: '',
+  shopName: '',
+  itemName: '',
 };
 
 const EMPTY_HARVEST = {
@@ -51,6 +55,8 @@ type ExpenseCsvRow = {
   harvestedDate: string;
   expenseDate: string;
   category: string;
+  shopName: string;
+  itemName: string;
   amount: number;
   note: string;
 };
@@ -60,6 +66,7 @@ export default function PakAdmin() {
   const { showToast, confirm } = useAdminUI();
   const { paks, loading } = usePaks();
   const { vaadis } = useVaadis();
+  const { shops } = useShops();
   const vaadiById = useMemo(() => new Map(vaadis.map((v) => [v.id, v])), [vaadis]);
   const [form, setForm] = useState(EMPTY_PAK);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -93,6 +100,8 @@ export default function PakAdmin() {
     { key: 'harvestedDate', label: t('pak.csv.harvested') },
     { key: 'expenseDate', label: t('pak.csv.expenseDate') },
     { key: 'category', label: t('pak.csv.category') },
+    { key: 'shopName', label: t('pak.csv.shop') },
+    { key: 'itemName', label: t('pak.csv.item') },
     { key: 'amount', label: t('pak.csv.amount') },
     { key: 'note', label: t('pak.csv.note') },
   ];
@@ -162,7 +171,8 @@ export default function PakAdmin() {
 
   const addExpense = async (pak: Pak, e: FormEvent) => {
     e.preventDefault();
-    const expense: PakExpense = { ...expenseForm };
+    const shop = shops.find((s) => s.id === expenseForm.shopId);
+    const expense: PakExpense = { ...expenseForm, shopName: shop?.name ?? '' };
     const { id, ...data } = pak;
     await updatePak(id, { ...data, expenses: [...pak.expenses, expense] });
     setExpenseForm({ ...EMPTY_EXPENSE, date: expenseForm.date });
@@ -264,6 +274,8 @@ export default function PakAdmin() {
             harvestedDate: p.harvestedDate ?? '',
             expenseDate: ex.date,
             category: CATEGORY_LABEL[ex.category],
+            shopName: ex.shopName ?? '',
+            itemName: ex.itemName ?? '',
             amount: ex.amount,
             note: ex.note,
           }))
@@ -275,6 +287,8 @@ export default function PakAdmin() {
               harvestedDate: p.harvestedDate ?? '',
               expenseDate: '',
               category: '',
+              shopName: '',
+              itemName: '',
               amount: 0,
               note: '',
             },
@@ -556,6 +570,28 @@ export default function PakAdmin() {
                         </select>
                       </label>
                       <label className="admin-field">
+                        {t('pak.field.shop')}
+                        <select
+                          value={expenseForm.shopId}
+                          onChange={(e) => setExpenseForm({ ...expenseForm, shopId: e.target.value })}
+                        >
+                          <option value="">{t('pak.field.noShop')}</option>
+                          {shops.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.village ? `${s.name} (${s.village})` : s.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="admin-field">
+                        {t('pak.field.itemName')}
+                        <input
+                          value={expenseForm.itemName}
+                          onChange={(e) => setExpenseForm({ ...expenseForm, itemName: e.target.value })}
+                          placeholder={t('pak.field.itemPlaceholder')}
+                        />
+                      </label>
+                      <label className="admin-field">
                         {t('pak.field.amount')}
                         <input
                           type="number"
@@ -588,7 +624,9 @@ export default function PakAdmin() {
                               style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, padding: '6px 0', borderBottom: '1px solid #f0f0ec' }}
                             >
                               <span>
-                                {ex.date} · {CATEGORY_LABEL[ex.category]} · ₹{ex.amount}
+                                {ex.date} · {CATEGORY_LABEL[ex.category]}
+                                {ex.itemName && <> · {ex.itemName}</>} · ₹{ex.amount}
+                                {ex.shopName && <span style={{ color: '#888' }}> · 🏪 {ex.shopName}</span>}
                                 {ex.note && <span style={{ color: '#888' }}> — {ex.note}</span>}
                               </span>
                               <button type="button" className="btn btn-danger btn-sm" onClick={() => removeExpense(pak, i)}>

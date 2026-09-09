@@ -7,6 +7,7 @@ export const en = {
   'layout.nav.farmers': 'Farmers',
   'layout.nav.pak': 'Pak',
   'layout.nav.vaadis': 'Vaadis',
+  'layout.nav.shops': 'Shops',
   'layout.nav.crops': 'Crops',
   'layout.nav.fruits': 'Fruits',
   'layout.more': 'More',
