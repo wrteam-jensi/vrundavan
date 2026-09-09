@@ -9,6 +9,7 @@ export const gu: Record<keyof typeof en, string> = {
   'layout.nav.farmers': 'ખેડૂતો',
   'layout.nav.pak': 'પાક',
   'layout.nav.vaadis': 'વાડીઓ',
+  'layout.nav.shops': 'દુકાનો',
   'layout.nav.crops': 'પાક વસ્તુઓ',
   'layout.nav.fruits': 'ફળો',
   'layout.more': 'વધુ',

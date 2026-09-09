@@ -294,6 +294,8 @@ export const en = {
   'pak.csv.harvested': 'Harvested Date',
   'pak.csv.expenseDate': 'Expense Date',
   'pak.csv.category': 'Category',
+  'pak.csv.shop': 'Shop',
+  'pak.csv.item': 'Item',
   'pak.csv.amount': 'Amount',
   'pak.csv.note': 'Note',
 
