@@ -41,6 +41,20 @@ export interface HarvestEntry {
   createdAt: number;
 }
 
+// A payment collected from a farmer outside of a harvest entry — e.g. ₹300 handed over
+// days after the work was billed. Settles against the farmer's overall balance, not one entry.
+export interface FarmerPayment {
+  id: string;
+  ownerId: string;
+  farmerId: string;
+  farmerName: string; // denormalised so the ledger keeps its label if a farmer is renamed
+  amount: number;
+  date: string; // YYYY-MM-DD
+  paymentMethod: string;
+  note: string;
+  createdAt: number;
+}
+
 export interface FarmCropEntry {
   id: string;
   ownerId: string;

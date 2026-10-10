@@ -41,6 +41,14 @@
       ]
     },
     {
+      "collectionGroup": "farmerPayments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ownerId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "farmCrops",
       "queryScope": "COLLECTION",
       "fields": [
