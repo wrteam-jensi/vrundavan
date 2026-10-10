@@ -11,9 +11,11 @@ import {
   useHarvestEntries,
   whatsAppFarmerUrl,
 } from '@/lib/harvest';
+import { useFarmerPayments } from '@/lib/farmerPayments';
 import { updateRatePerHour, useRatePerHour } from '@/lib/useSettings';
 import { downloadCsv } from '@/lib/csvExport';
 import type { HarvestEntry } from '@/lib/types';
+import FarmerLedger from '@/components/FarmerLedger';
 import MonthlyStatement from '@/components/MonthlyStatement';
 import SkeletonList from '@/components/SkeletonList';
 import { useAdminUI } from '@/components/AdminUI';
@@ -58,6 +60,7 @@ export default function HarvestingAdmin() {
   const { showToast, confirm } = useAdminUI();
   const { farmers } = useFarmers();
   const { entries, loading } = useHarvestEntries();
+  const { payments } = useFarmerPayments();
   const rate = useRatePerHour();
   const [form, setForm] = useState(emptyForm(0));
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -222,11 +225,10 @@ export default function HarvestingAdmin() {
   );
 
   const groupedByFarmer = useMemo(() => {
-    const map = new Map<string, { farmerId: string; farmerName: string; entries: HarvestEntry[]; pendingTotal: number }>();
+    const map = new Map<string, { farmerId: string; farmerName: string; entries: HarvestEntry[] }>();
     for (const e of filtered) {
-      const g = map.get(e.farmerId) ?? { farmerId: e.farmerId, farmerName: e.farmerName, entries: [], pendingTotal: 0 };
+      const g = map.get(e.farmerId) ?? { farmerId: e.farmerId, farmerName: e.farmerName, entries: [] };
       g.entries.push(e);
-      g.pendingTotal = Math.round((g.pendingTotal + e.pendingAmount) * 100) / 100;
       map.set(e.farmerId, g);
     }
     for (const g of map.values()) {
@@ -427,9 +429,6 @@ export default function HarvestingAdmin() {
               <div className="admin-farmer-group-header">
                 <strong>{g.farmerName}</strong>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <span className={`admin-pending-badge ${g.pendingTotal > 0 ? 'pending-due' : 'pending-ok'}`}>
-                    {t('harvesting.card.pending')} <strong>₹{g.pendingTotal}</strong>
-                  </span>
                   <a
                     href={whatsAppFarmerUrl(g.farmerName, g.entries[0].farmerMobile, g.entries, entries)}
                     target="_blank"
@@ -440,6 +439,13 @@ export default function HarvestingAdmin() {
                   </a>
                 </div>
               </div>
+              <FarmerLedger
+                farmerId={g.farmerId}
+                farmerName={g.farmerName}
+                farmerMobile={g.entries[0].farmerMobile}
+                entries={entries}
+                payments={payments}
+              />
               {g.entries.map((entry) => (
                 <div key={entry.id} className="admin-entry-row">
                   {entry.pendingAmount > 0 && (
