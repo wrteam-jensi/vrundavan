@@ -3,6 +3,8 @@
 import { useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useFarmers, useHarvestEntries, whatsAppEntryUrl } from '@/lib/harvest';
+import { pendingByFarmer, useFarmerPayments } from '@/lib/farmerPayments';
+import FarmerLedger from '@/components/FarmerLedger';
 import SkeletonList from '@/components/SkeletonList';
 import { useLanguage } from '@/lib/i18n';
 import '../../admin.css';
@@ -13,6 +15,7 @@ export default function FarmerDetail() {
   const router = useRouter();
   const { farmers, loading: farmersLoading } = useFarmers();
   const { entries, loading: entriesLoading } = useHarvestEntries();
+  const { payments } = useFarmerPayments();
 
   const farmer = farmers.find((f) => f.id === params.id);
 
@@ -22,14 +25,16 @@ export default function FarmerDetail() {
   );
 
   const summary = useMemo(() => {
+    const collectedWithEntries = farmerEntries.reduce((s, e) => s + e.paidAmount + e.advanceAmount, 0);
+    const standalonePayments = payments.filter((p) => p.farmerId === params.id).reduce((s, p) => s + p.amount, 0);
     return {
       entryCount: farmerEntries.length,
       totalHours: Math.round(farmerEntries.reduce((s, e) => s + e.hours, 0) * 100) / 100,
       totalAmount: Math.round(farmerEntries.reduce((s, e) => s + e.totalAmount, 0) * 100) / 100,
-      totalPaid: Math.round(farmerEntries.reduce((s, e) => s + e.paidAmount + e.advanceAmount, 0) * 100) / 100,
-      totalPending: Math.round(farmerEntries.reduce((s, e) => s + e.pendingAmount, 0) * 100) / 100,
+      totalPaid: Math.round((collectedWithEntries + standalonePayments) * 100) / 100,
+      totalPending: pendingByFarmer(farmerEntries, payments).get(params.id) ?? 0,
     };
-  }, [farmerEntries]);
+  }, [farmerEntries, payments, params.id]);
 
   const loading = farmersLoading || entriesLoading;
 
@@ -82,6 +87,16 @@ export default function FarmerDetail() {
             </div>
           </div>
 
+          <div className="admin-farmer-group" style={{ marginBottom: 16 }}>
+            <FarmerLedger
+              farmerId={farmer!.id}
+              farmerName={farmer!.name}
+              farmerMobile={farmer!.mobile}
+              entries={entries}
+              payments={payments}
+            />
+          </div>
+
           <div className="admin-list">
             {farmerEntries.map((entry) => (
               <div key={entry.id} className="admin-card">
@@ -97,7 +112,7 @@ export default function FarmerDetail() {
                   {entry.note && <div className="admin-card-meta">{entry.note}</div>}
                 </div>
                 <div className="admin-card-actions">
-                  <a href={whatsAppEntryUrl(entry, entries)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
+                  <a href={whatsAppEntryUrl(entry, entries, payments)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
                     {t('farmerDetail.whatsapp')}
                   </a>
                 </div>

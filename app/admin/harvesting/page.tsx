@@ -368,7 +368,7 @@ export default function HarvestingAdmin() {
         </div>
       </form>
 
-      <MonthlyStatement farmers={farmers} entries={entries} />
+      <MonthlyStatement farmers={farmers} entries={entries} payments={payments} />
 
       <div className="admin-filters">
         <select value={farmerFilter} onChange={(e) => setFarmerFilter(e.target.value)}>
@@ -430,7 +430,7 @@ export default function HarvestingAdmin() {
                 <strong>{g.farmerName}</strong>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <a
-                    href={whatsAppFarmerUrl(g.farmerName, g.entries[0].farmerMobile, g.entries, entries)}
+                    href={whatsAppFarmerUrl(g.farmerName, g.entries[0].farmerMobile, g.entries, entries, payments)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-whatsapp btn-sm"

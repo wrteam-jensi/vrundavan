@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useFarmers, useHarvestEntries, whatsAppEntryUrl } from '@/lib/harvest';
 import { useFarmCropEntries } from '@/lib/farmCrops';
+import { pendingByFarmer, totalPending, useFarmerPayments } from '@/lib/farmerPayments';
 import SkeletonList from '@/components/SkeletonList';
 import { useLanguage } from '@/lib/i18n';
 import '../admin.css';
@@ -16,6 +17,7 @@ export default function Dashboard() {
   const { farmers } = useFarmers();
   const { entries: harvestEntries, loading: harvestLoading } = useHarvestEntries();
   const { entries: cropEntries, loading: cropLoading } = useFarmCropEntries();
+  const { payments } = useFarmerPayments();
 
   const loading = harvestLoading || cropLoading;
   const today = todayStr();
@@ -28,22 +30,21 @@ export default function Dashboard() {
       todayHarvestAmount: Math.round(todayHarvest.reduce((s, e) => s + e.totalAmount, 0) * 100) / 100,
       todayVaadiCost: Math.round(todayVaadi.reduce((s, e) => s + e.cost, 0) * 100) / 100,
       todayVaadiRevenue: Math.round(todayVaadi.reduce((s, e) => s + e.revenue, 0) * 100) / 100,
-      totalPending: Math.round(harvestEntries.reduce((s, e) => s + e.pendingAmount, 0) * 100) / 100,
+      totalPending: totalPending(harvestEntries, payments),
       farmerCount: farmers.length,
     };
-  }, [harvestEntries, cropEntries, today, farmers]);
+  }, [harvestEntries, cropEntries, today, farmers, payments]);
 
   const recentEntries = useMemo(() => harvestEntries.slice(0, 5), [harvestEntries]);
 
   const topPendingFarmers = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const e of harvestEntries) map.set(e.farmerId, (map.get(e.farmerId) ?? 0) + e.pendingAmount);
+    const map = pendingByFarmer(harvestEntries, payments);
     return farmers
-      .map((f) => ({ farmer: f, pending: Math.round((map.get(f.id) ?? 0) * 100) / 100 }))
+      .map((f) => ({ farmer: f, pending: map.get(f.id) ?? 0 }))
       .filter((r) => r.pending > 0)
       .sort((a, b) => b.pending - a.pending)
       .slice(0, 5);
-  }, [harvestEntries, farmers]);
+  }, [harvestEntries, farmers, payments]);
 
   return (
     <div>
@@ -129,7 +130,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="admin-card-actions">
-                    <a href={whatsAppEntryUrl(entry, harvestEntries)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
+                    <a href={whatsAppEntryUrl(entry, harvestEntries, payments)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
                       {t('dashboard.whatsapp')}
                     </a>
                   </div>

@@ -12,8 +12,9 @@ import {
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { auth, db } from './firebase';
+import { pendingByFarmer } from './farmerPayments';
 import { requireOwnerId } from './ownerId';
-import type { Farmer, HarvestEntry } from './types';
+import type { Farmer, FarmerPayment, HarvestEntry } from './types';
 
 export function hoursBetween(startTime: string, endTime: string) {
   const [sh, sm] = startTime.split(':').map(Number);
@@ -122,15 +123,14 @@ function normalizePhone(mobile: string) {
 
 // Merges same farmer + same date entries (e.g. two shifts in one day) into one message,
 // and adds the farmer's overall pending total (across all dates), not just this date's.
-export function whatsAppEntryUrl(entry: HarvestEntry, allEntries: HarvestEntry[]) {
+export function whatsAppEntryUrl(entry: HarvestEntry, allEntries: HarvestEntry[], allPayments: FarmerPayment[] = []) {
   const sameDayEntries = allEntries.filter((e) => e.farmerId === entry.farmerId && e.date === entry.date);
   const totalHours = Math.round(sameDayEntries.reduce((s, e) => s + e.hours, 0) * 100) / 100;
   const totalAmount = Math.round(sameDayEntries.reduce((s, e) => s + e.totalAmount, 0) * 100) / 100;
   const totalPaid = Math.round(sameDayEntries.reduce((s, e) => s + e.paidAmount + e.advanceAmount, 0) * 100) / 100;
   const dayPending = Math.round(sameDayEntries.reduce((s, e) => s + e.pendingAmount, 0) * 100) / 100;
-  const overallPending = Math.round(
-    allEntries.filter((e) => e.farmerId === entry.farmerId).reduce((s, e) => s + e.pendingAmount, 0) * 100
-  ) / 100;
+  // Derived from the ledger, so standalone payments count against what the farmer still owes.
+  const overallPending = pendingByFarmer(allEntries, allPayments).get(entry.farmerId) ?? 0;
 
   const history = sameDayEntries
     .map((e) => `${e.startTime}–${e.endTime}: ${e.hours}h × ₹${e.ratePerHour} = ₹${e.totalAmount}`)
@@ -146,14 +146,19 @@ export function whatsAppEntryUrl(entry: HarvestEntry, allEntries: HarvestEntry[]
 
 // Combines all given entries for one farmer (already date-sorted) into a single
 // date-wise WhatsApp message, plus the farmer's overall pending total.
-export function whatsAppFarmerUrl(farmerName: string, farmerMobile: string, farmerEntries: HarvestEntry[], allEntries: HarvestEntry[]) {
+export function whatsAppFarmerUrl(
+  farmerName: string,
+  farmerMobile: string,
+  farmerEntries: HarvestEntry[],
+  allEntries: HarvestEntry[],
+  allPayments: FarmerPayment[] = []
+) {
   const totalHours = Math.round(farmerEntries.reduce((s, e) => s + e.hours, 0) * 100) / 100;
   const totalAmount = Math.round(farmerEntries.reduce((s, e) => s + e.totalAmount, 0) * 100) / 100;
   const totalPaid = Math.round(farmerEntries.reduce((s, e) => s + e.paidAmount + e.advanceAmount, 0) * 100) / 100;
   const shownPending = Math.round(farmerEntries.reduce((s, e) => s + e.pendingAmount, 0) * 100) / 100;
-  const overallPending = Math.round(
-    allEntries.filter((e) => e.farmerId === farmerEntries[0]?.farmerId).reduce((s, e) => s + e.pendingAmount, 0) * 100
-  ) / 100;
+  const farmerId = farmerEntries[0]?.farmerId ?? '';
+  const overallPending = pendingByFarmer(allEntries, allPayments).get(farmerId) ?? 0;
 
   const history = farmerEntries
     .map((e) => `${e.date} ${e.startTime}–${e.endTime}: ${e.hours}h × ₹${e.ratePerHour} = ₹${e.totalAmount}`)
@@ -175,10 +180,16 @@ export function whatsAppStatementUrl(farmer: Farmer, monthLabel: string, stats: 
   return `https://wa.me/${normalizePhone(farmer.mobile)}?text=${encodeURIComponent(message)}`;
 }
 
-export function whatsAppPendingUrl(farmer: Farmer, entries: HarvestEntry[]) {
-  const pendingEntries = entries.filter((e) => e.farmerId === farmer.id && e.pendingAmount > 0);
-  const totalPending = Math.round(pendingEntries.reduce((s, e) => s + e.pendingAmount, 0) * 100) / 100;
-  const lines = pendingEntries.map((e) => `${e.date}: ${e.hours}h — ₹${e.pendingAmount}`).join('\n');
+export function whatsAppPendingUrl(farmer: Farmer, entries: HarvestEntry[], payments: FarmerPayment[] = []) {
+  const unbilled = entries.filter((e) => e.farmerId === farmer.id && e.pendingAmount > 0);
+  const received = payments.filter((p) => p.farmerId === farmer.id);
+  // The total is the ledger balance, so it stays right even when a payment has already
+  // reduced the dues listed below.
+  const totalPending = pendingByFarmer(entries, payments).get(farmer.id) ?? 0;
+  const lines = [
+    ...unbilled.map((e) => `${e.date}: ${e.hours}h — ₹${e.pendingAmount}`),
+    ...received.map((p) => `${p.date}: Jama — ₹${p.amount}`),
+  ].join('\n');
   const message = `Namaste ${farmer.name},\nTamaru pending payment:\n\n${lines}\n\nKul Pending: ₹${totalPending}\n\nThank you.`;
   return `https://wa.me/${normalizePhone(farmer.mobile)}?text=${encodeURIComponent(message)}`;
 }

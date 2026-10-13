@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { whatsAppStatementUrl } from '@/lib/harvest';
-import type { Farmer, HarvestEntry } from '@/lib/types';
+import type { Farmer, FarmerPayment, HarvestEntry } from '@/lib/types';
 import { useLanguage } from '@/lib/i18n';
 
 function currentMonthStr() {
@@ -14,7 +14,15 @@ function monthLabel(monthStr: string) {
   return new Date(year, month - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
 }
 
-export default function MonthlyStatement({ farmers, entries }: { farmers: Farmer[]; entries: HarvestEntry[] }) {
+export default function MonthlyStatement({
+  farmers,
+  entries,
+  payments,
+}: {
+  farmers: Farmer[];
+  entries: HarvestEntry[];
+  payments: FarmerPayment[];
+}) {
   const { t } = useLanguage();
   const [farmerId, setFarmerId] = useState('');
   const [month, setMonth] = useState(currentMonthStr());
@@ -27,16 +35,28 @@ export default function MonthlyStatement({ farmers, entries }: { farmers: Farmer
     [entries, farmerId, month]
   );
 
-  const stats = useMemo(
-    () => ({
+  const monthPayments = useMemo(
+    () => payments.filter((p) => p.farmerId === farmerId && p.date.startsWith(month)).sort((a, b) => a.date.localeCompare(b.date)),
+    [payments, farmerId, month]
+  );
+
+  // Scoped to the month, so this is the month's own balance, not the farmer's running one.
+  const stats = useMemo(() => {
+    const totalAmount = Math.round(monthEntries.reduce((s, e) => s + e.totalAmount, 0) * 100) / 100;
+    const totalPaid =
+      Math.round(
+        (monthEntries.reduce((s, e) => s + e.paidAmount + e.advanceAmount, 0) +
+          monthPayments.reduce((s, p) => s + p.amount, 0)) *
+          100
+      ) / 100;
+    return {
       entryCount: monthEntries.length,
       totalHours: Math.round(monthEntries.reduce((s, e) => s + e.hours, 0) * 100) / 100,
-      totalAmount: Math.round(monthEntries.reduce((s, e) => s + e.totalAmount, 0) * 100) / 100,
-      totalPaid: Math.round(monthEntries.reduce((s, e) => s + e.paidAmount + e.advanceAmount, 0) * 100) / 100,
-      totalPending: Math.round(monthEntries.reduce((s, e) => s + e.pendingAmount, 0) * 100) / 100,
-    }),
-    [monthEntries]
-  );
+      totalAmount,
+      totalPaid,
+      totalPending: Math.round((totalAmount - totalPaid) * 100) / 100,
+    };
+  }, [monthEntries, monthPayments]);
 
   return (
     <div className="admin-form" style={{ marginBottom: 20 }}>
@@ -61,7 +81,7 @@ export default function MonthlyStatement({ farmers, entries }: { farmers: Farmer
             <span className={stats.totalPending > 0 ? 'pending-due' : 'pending-ok'}>{t('monthlyStatement.pending')} <strong>₹{stats.totalPending}</strong></span>
           </div>
 
-          {stats.entryCount === 0 ? (
+          {stats.entryCount === 0 && monthPayments.length === 0 ? (
             <div className="admin-empty">
               {t('monthlyStatement.noEntries').replace('{name}', farmer.name).replace('{month}', monthLabel(month))}
             </div>
@@ -75,6 +95,20 @@ export default function MonthlyStatement({ farmers, entries }: { farmers: Farmer
                     </div>
                     <div className="admin-card-meta">
                       {entry.hours}h × ₹{entry.ratePerHour} = ₹{entry.totalAmount}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {monthPayments.map((p) => (
+                <div key={p.id} className="admin-card">
+                  <div className="admin-card-body">
+                    <div className="admin-card-title">
+                      {p.date} <span className="sub">{t('ledger.rowPayment')}</span>
+                    </div>
+                    <div className="admin-card-meta">
+                      <strong className="pending-ok">₹{p.amount}</strong>
+                      {p.paymentMethod ? ` · ${p.paymentMethod}` : ''}
+                      {p.note ? ` — ${p.note}` : ''}
                     </div>
                   </div>
                 </div>
@@ -118,6 +152,16 @@ export default function MonthlyStatement({ farmers, entries }: { farmers: Farmer
                     <td>{entry.hours}</td>
                     <td>₹{entry.ratePerHour}</td>
                     <td>₹{entry.totalAmount}</td>
+                  </tr>
+                ))}
+                {monthPayments.map((p) => (
+                  <tr key={p.id}>
+                    <td>{p.date}</td>
+                    <td colSpan={3}>
+                      {t('ledger.rowPayment')}
+                      {p.paymentMethod ? ` · ${p.paymentMethod}` : ''}
+                    </td>
+                    <td>− ₹{p.amount}</td>
                   </tr>
                 ))}
               </tbody>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { createFarmer, deleteFarmer, updateFarmer, useFarmers, useHarvestEntries, whatsAppPendingUrl } from '@/lib/harvest';
+import { pendingByFarmer as computePendingByFarmer, useFarmerPayments } from '@/lib/farmerPayments';
 import type { Farmer } from '@/lib/types';
 import SkeletonList from '@/components/SkeletonList';
 import { useAdminUI } from '@/components/AdminUI';
@@ -15,17 +16,14 @@ export default function FarmersAdmin() {
   const { showToast, confirm } = useAdminUI();
   const { farmers, loading } = useFarmers();
   const { entries } = useHarvestEntries();
+  const { payments } = useFarmerPayments();
   const [form, setForm] = useState(EMPTY);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'pending'>('name');
 
-  const pendingByFarmer = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const e of entries) map.set(e.farmerId, (map.get(e.farmerId) ?? 0) + e.pendingAmount);
-    return map;
-  }, [entries]);
+  const pendingByFarmer = useMemo(() => computePendingByFarmer(entries, payments), [entries, payments]);
 
   const startEdit = (f: Farmer) => {
     setEditingId(f.id);
@@ -149,7 +147,7 @@ export default function FarmersAdmin() {
                 </div>
                 <div className="admin-card-actions">
                   {pending > 0 && (
-                    <a href={whatsAppPendingUrl(f, entries)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
+                    <a href={whatsAppPendingUrl(f, entries, payments)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">
                       {t('farmers.sendPending')}
                     </a>
                   )}

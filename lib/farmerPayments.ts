@@ -138,6 +138,30 @@ export function farmerLedger(
   return { debit, credit, balance: round2(debit - credit), rows };
 }
 
+/**
+ * Per-farmer balance due, derived the same way `farmerLedger` does it: entry charges minus
+ * everything collected, including standalone payments. Every pending figure in the admin
+ * reads from this so a ₹300 payment lowers the dashboard, the farmer list and the ledger alike.
+ */
+export function pendingByFarmer(entries: HarvestEntry[], payments: FarmerPayment[]) {
+  const map = new Map<string, number>();
+  for (const e of entries) {
+    map.set(e.farmerId, (map.get(e.farmerId) ?? 0) + e.totalAmount - e.advanceAmount - e.paidAmount);
+  }
+  for (const p of payments) {
+    map.set(p.farmerId, (map.get(p.farmerId) ?? 0) - p.amount);
+  }
+  for (const [k, v] of map) map.set(k, round2(v));
+  return map;
+}
+
+/** Owner-wide outstanding total — negative farmer balances (overpayments) don't mask real dues. */
+export function totalPending(entries: HarvestEntry[], payments: FarmerPayment[]) {
+  let sum = 0;
+  for (const v of pendingByFarmer(entries, payments).values()) if (v > 0) sum += v;
+  return round2(sum);
+}
+
 function normalizePhone(mobile: string) {
   const digits = mobile.replace(/\D/g, '');
   return digits.length === 10 ? `91${digits}` : digits;
