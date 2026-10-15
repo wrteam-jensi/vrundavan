@@ -88,21 +88,6 @@
   letter-spacing: 0.01em;
 }
 
-.admin-bulk-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  background: var(--admin-primary-soft);
-  border: 1px solid var(--admin-primary-soft-border);
-  border-radius: var(--admin-radius-md);
-  padding: 11px 14px;
-  margin-bottom: 14px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--admin-primary-dark);
-}
-
 /* ── Header / Nav ── */
 .admin-header {
   position: sticky;
@@ -609,14 +594,6 @@ input:focus, select:focus, textarea:focus {
   background: var(--admin-bg);
 }
 
-.admin-entry-checkbox {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  margin-top: 2px;
-  accent-color: var(--admin-primary);
-}
-
 .admin-entry-note {
   font-size: 12px;
   color: var(--admin-text-faint);
@@ -636,6 +613,13 @@ input:focus, select:focus, textarea:focus {
   gap: 8px;
   flex-wrap: wrap;
   padding: 10px 16px;
+}
+
+.admin-ledger-recap {
+  font-size: 12px;
+  color: var(--admin-text-muted);
+  font-weight: 500;
+  margin-right: auto;
 }
 
 .admin-ledger-form {
