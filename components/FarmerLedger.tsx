@@ -30,7 +30,7 @@ interface Props {
 export default function FarmerLedger({ farmerId, farmerName, farmerMobile, entries, payments }: Props) {
   const { t } = useLanguage();
   const { showToast, confirm } = useAdminUI();
-  const [open, setOpen] = useState(false);
+  const [openOverride, setOpenOverride] = useState<boolean | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(todayStr());
@@ -47,6 +47,12 @@ export default function FarmerLedger({ farmerId, farmerName, farmerMobile, entri
       }),
     [farmerId, entries, payments, t]
   );
+
+  const jobCount = useMemo(() => entries.filter((e) => e.farmerId === farmerId).length, [entries, farmerId]);
+
+  // A farmer who still owes opens expanded — the whole point is to see which jobs make up the
+  // balance without hunting for a toggle. Once the toggle is touched, that choice wins.
+  const open = openOverride ?? ledger.balance > 0;
 
   const entered = Number(amount) || 0;
   const overpay = Math.round((entered - ledger.balance) * 100) / 100;
@@ -78,7 +84,7 @@ export default function FarmerLedger({ farmerId, farmerName, farmerMobile, entri
       });
       showToast(t('ledger.toast.saved'));
       resetForm();
-      setOpen(true);
+      setOpenOverride(true);
     } catch {
       showToast(t('ledger.toast.error'), 'error');
     } finally {
@@ -118,6 +124,14 @@ export default function FarmerLedger({ farmerId, farmerName, farmerMobile, entri
         <span className={`admin-pending-badge ${ledger.balance > 0 ? 'pending-due' : 'pending-ok'}`}>
           {ledger.balance > 0 ? t('ledger.balance') : t('ledger.settled')} <strong>₹{ledger.balance}</strong>
         </span>
+        {ledger.rows.length > 0 && (
+          <span className="admin-ledger-recap">
+            {t('ledger.recap')
+              .replace('{jobs}', String(jobCount))
+              .replace('{billed}', String(ledger.debit))
+              .replace('{received}', String(ledger.credit))}
+          </span>
+        )}
         <button
           type="button"
           className={`btn btn-sm ${formOpen ? 'btn-secondary' : 'btn-primary'}`}
@@ -125,7 +139,7 @@ export default function FarmerLedger({ farmerId, farmerName, farmerMobile, entri
         >
           {formOpen ? t('ledger.cancel') : t('ledger.recordPayment')}
         </button>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={() => setOpen((o) => !o)}>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={() => setOpenOverride(!open)}>
           {open ? t('ledger.hideLedger') : t('ledger.viewLedger')}
         </button>
         {ledger.rows.length > 0 && (

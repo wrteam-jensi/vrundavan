@@ -196,6 +196,7 @@ export const gu: Record<keyof typeof en, string> = {
   'harvesting.csv.note': 'નોંધ',
 
   // harvesting — farmer ledger (jama/udhar)
+  'ledger.recap': '{jobs} કામ · ₹{billed} માંથી ₹{received} જમા',
   'ledger.balance': 'બાકી ઉધાર',
   'ledger.debit': 'કુલ બિલ',
   'ledger.credit': 'કુલ જમા',

@@ -194,6 +194,7 @@ export const en = {
   'harvesting.csv.note': 'Note',
 
   // harvesting — farmer ledger (jama/udhar)
+  'ledger.recap': '{jobs} jobs · ₹{received} received of ₹{billed}',
   'ledger.balance': 'Balance Due',
   'ledger.debit': 'Total Billed',
   'ledger.credit': 'Total Received',

@@ -8,7 +8,6 @@ import {
   query,
   updateDoc,
   where,
-  writeBatch,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { auth, db } from './firebase';
@@ -103,17 +102,6 @@ export async function updateHarvestEntry(id: string, data: Omit<HarvestEntry, 'i
 
 export async function deleteHarvestEntry(id: string) {
   await deleteDoc(doc(db, 'harvestEntries', id));
-}
-
-export async function markEntriesPaid(entries: HarvestEntry[]) {
-  const batch = writeBatch(db);
-  for (const entry of entries) {
-    batch.update(doc(db, 'harvestEntries', entry.id), {
-      paidAmount: entry.paidAmount + entry.pendingAmount,
-      pendingAmount: 0,
-    });
-  }
-  await batch.commit();
 }
 
 function normalizePhone(mobile: string) {

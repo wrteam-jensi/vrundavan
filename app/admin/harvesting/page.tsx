@@ -5,7 +5,6 @@ import {
   createHarvestEntry,
   deleteHarvestEntry,
   hoursBetween,
-  markEntriesPaid,
   updateHarvestEntry,
   useFarmers,
   useHarvestEntries,
@@ -71,8 +70,6 @@ export default function HarvestingAdmin() {
   const [rateInput, setRateInput] = useState('');
   const [rateBusy, setRateBusy] = useState(false);
   const [rateEditing, setRateEditing] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [markingPaid, setMarkingPaid] = useState(false);
 
   useEffect(() => {
     if (rate != null && !editingId) setForm((f) => ({ ...f, ratePerHour: rate }));
@@ -177,33 +174,6 @@ export default function HarvestingAdmin() {
         },
       },
     });
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const onMarkSelectedPaid = async () => {
-    const selected = entries.filter((e) => selectedIds.has(e.id));
-    if (selected.length === 0) return;
-    const unit = selected.length === 1 ? t('harvesting.unit.entry') : t('harvesting.unit.entries');
-    if (!(await confirm(t('harvesting.confirm.markPaid').replace('{count}', String(selected.length)).replace('{unit}', unit))))
-      return;
-    setMarkingPaid(true);
-    try {
-      await markEntriesPaid(selected);
-      showToast(t('harvesting.toast.markedPaid').replace('{count}', String(selected.length)).replace('{unit}', unit));
-      setSelectedIds(new Set());
-    } catch {
-      showToast(t('harvesting.toast.error'), 'error');
-    } finally {
-      setMarkingPaid(false);
-    }
   };
 
   const onSaveRate = async () => {
@@ -397,28 +367,7 @@ export default function HarvestingAdmin() {
         >
           {t('harvesting.exportCsv')}
         </button>
-        {filtered.some((e) => e.pendingAmount > 0) && (
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => setSelectedIds(new Set(filtered.filter((e) => e.pendingAmount > 0).map((e) => e.id)))}
-          >
-            {t('harvesting.selectAllPending')}
-          </button>
-        )}
       </div>
-
-      {selectedIds.size > 0 && (
-        <div className="admin-bulk-bar">
-          <span>{t('harvesting.selectedCount').replace('{count}', String(selectedIds.size))}</span>
-          <button type="button" className="btn btn-primary btn-sm" disabled={markingPaid} onClick={onMarkSelectedPaid}>
-            {markingPaid ? t('harvesting.marking') : t('harvesting.markSelectedPaid')}
-          </button>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setSelectedIds(new Set())}>
-            {t('harvesting.clearSelection')}
-          </button>
-        </div>
-      )}
 
       {loading ? (
         <SkeletonList rows={4} />
@@ -448,23 +397,14 @@ export default function HarvestingAdmin() {
               />
               {g.entries.map((entry) => (
                 <div key={entry.id} className="admin-entry-row">
-                  {entry.pendingAmount > 0 && (
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(entry.id)}
-                      onChange={() => toggleSelect(entry.id)}
-                      className="admin-entry-checkbox"
-                      aria-label={t('harvesting.selectEntryAria').replace('{name}', entry.farmerName)}
-                    />
-                  )}
                   <div className="admin-card-body">
                     <div className="admin-card-title">
                       {entry.date} <span className="sub">{entry.startTime}–{entry.endTime}</span>
                     </div>
                     <div className="admin-card-meta">
-                      {entry.hours}h × ₹{entry.ratePerHour} = ₹{entry.totalAmount}
-                      {' · '}{t('harvesting.card.advance')} ₹{entry.advanceAmount} · {t('harvesting.card.paid')} ₹{entry.paidAmount} · {t('harvesting.card.pending')}{' '}
-                      <strong style={{ color: entry.pendingAmount > 0 ? '#c0392b' : '#2e5339' }}>₹{entry.pendingAmount}</strong>
+                      {entry.hours}h × ₹{entry.ratePerHour} = <strong>₹{entry.totalAmount}</strong>
+                      {entry.advanceAmount > 0 && <> · {t('harvesting.card.advance')} ₹{entry.advanceAmount}</>}
+                      {entry.paidAmount > 0 && <> · {t('harvesting.card.paid')} ₹{entry.paidAmount}</>}
                     </div>
                     {entry.note && (
                       <div className="admin-entry-note">{t('harvesting.card.note')} {entry.note}</div>
